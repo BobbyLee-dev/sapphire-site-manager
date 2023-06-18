@@ -1,16 +1,25 @@
 // WordPress
+import {memo, useState} from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
 
 // Router
-import { useLocation, Link, useParams } from 'react-router-dom'
+import {useLocation, Link, useParams} from 'react-router-dom'
 
 // React Query
-import { useQuery } from 'react-query'
+import {useQuery} from 'react-query'
 
 // JoyUI
-import { Typography } from '@mui/joy'
+import {Typography} from '@mui/joy'
+import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
+import {PlusSquare} from "react-feather";
 
-function fetchTodoById ({ queryKey }) {
+const MyPureIframe = memo(({src}) => (
+    <iframe src={src}/>
+));
+
+
+function fetchTodoById({queryKey}) {
 
     // Get task ID from the query key
     const todoId = queryKey[1]
@@ -34,13 +43,11 @@ function fetchTodoById ({ queryKey }) {
     return fetchTodo(todoId)
 }
 
-export default function Todo (props) {
+export default function Todo(props) {
     const todoPassedData = useLocation()
-    console.log(todoPassedData.state)
-
     const urlParams = useParams()
-
     const result = useQuery(['todos', urlParams.todoId], fetchTodoById)
+    const [showTodoEdit, setShowTodoEdit] = useState('--hide-todo-edit')
 
     if (result.status === 'error') {
         return (
@@ -50,7 +57,7 @@ export default function Todo (props) {
         )
     }
 
-    function ShowTitle ({ result, passDown }) {
+    function ShowTitle({result, passDown}) {
 
         if (result) {
             return (
@@ -77,20 +84,73 @@ export default function Todo (props) {
 
     }
 
+    function toggleTodoEdit() {
+        setShowTodoEdit('--show-todo-edit')
+
+    }
+
+    function hideTodoEdit() {
+        setShowTodoEdit('--hide-todo-edit')
+
+    }
+
+    console.log(showTodoEdit)
+
     return (
         <>
-            {/* <h1>{state.title}</h1> */}
-            <Typography level="h1" fontSize="xl4">
-                {/*{result.data.title && result.data.title.rendered}*/}
-                {}
-                <ShowTitle result={result.data}
-                           passDown={todoPassedData.state}/>
+            <Box
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    my: 0,
+                    gap: 1,
+                    flexWrap: 'wrap',
+                    '& > *': {
+                        minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
+                        flexGrow: 1,
+                    },
+                }}
+            >
+                <Typography level="h1" fontSize="xl4">
+                    <ShowTitle result={result.data}
+                               passDown={todoPassedData.state}/>
+                </Typography>
+                <Box sx={{flex: 999}}/>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        gap: 1,
+                        '& > *': {flexGrow: 1},
+                    }}
+                >
 
-            </Typography>
+                    <Button
+                        color="primary"
+                        variant="soft"
+                        underline="none"
+                        endDecorator={<PlusSquare className="feather"/>}
+                        onClick={toggleTodoEdit}
+                    >
+                        Edit To-Do
+                    </Button>
+                </Box>
+            </Box>
+
+            <div className={`edit-sapphire-todo ${showTodoEdit}`}>
+                <MyPureIframe
+                    src={`${window.location.origin}/wp-admin/post.php?post=${todoPassedData.state.id}&action=edit`}/>
+                <Button
+                    className={`add-todo-back-btn`}
+                    color="primary"
+                    variant="soft"
+                    underline="none"
+                    onClick={hideTodoEdit}
+                >
+                    Back
+                </Button>
+            </div>
 
             {/*<a href={`${window.location.origin}/wp-admin/post.php?post=${result.data.id}&action=edit`}>edit</a>*/}
-            {/*<iframe height="1000" frameBorder="0" width="1000"*/}
-            {/*        src={`${window.location.origin}/wp-admin/post.php?post=${todoPassedData.state.id}&action=edit`}/>*/}
         </>
     )
 }

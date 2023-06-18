@@ -2,10 +2,10 @@
 import apiFetch from '@wordpress/api-fetch'
 
 // Router
-import { Link } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 
 // React Query
-import { useQuery } from 'react-query'
+import {useQuery} from 'react-query'
 
 // JoyUI
 import Box from '@mui/joy/Box'
@@ -21,7 +21,7 @@ import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
 import Table from '@mui/joy/Table'
 import Sheet from '@mui/joy/Sheet'
-import IconButton, { iconButtonClasses } from '@mui/joy/IconButton'
+import IconButton, {iconButtonClasses} from '@mui/joy/IconButton'
 import Typography from '@mui/joy/Typography'
 
 // Icons
@@ -54,15 +54,15 @@ const fetchTodos = async () => {
     return options
 }
 
-export default function OrderTable () {
-    const [open, setOpen] = React.useState(false)
+export default function OrderTable() {
+    const [open,] = React.useState(false)
     const renderFilters = () => (
         <>
             <FormControl size="sm">
                 <FormLabel>Status</FormLabel>
                 <Select
                     placeholder="Filter by status"
-                    slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
+                    slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
                 >
                     <Option value="all">All</Option>
                     <Option value="in-progress">In Progress</Option>
@@ -101,7 +101,7 @@ export default function OrderTable () {
                     size="sm"
                     placeholder="Search"
                     startDecorator={<Search className="feather"/>}
-                    sx={{ flexGrow: 1 }}
+                    sx={{flexGrow: 1}}
                 />
                 <IconButton
                     size="sm"
@@ -120,7 +120,7 @@ export default function OrderTable () {
                         <Typography id="filter-modal" level="h2">
                             Filters
                         </Typography>
-                        <Divider sx={{ my: 2 }}/>
+                        <Divider sx={{my: 2}}/>
                         <Sheet
                             sx={{
                                 display: 'flex',
@@ -158,7 +158,7 @@ export default function OrderTable () {
                     },
                 }}
             >
-                <FormControl sx={{ flex: 1 }} size="sm">
+                <FormControl sx={{flex: 1}} size="sm">
                     <FormLabel>Search for To-do</FormLabel>
                     <Input
                         placeholder="Search"
@@ -202,10 +202,10 @@ export default function OrderTable () {
                         >
                             Title
                         </th>
-                        <th style={{ width: '25%', padding: '12px 20px' }}>
+                        <th style={{width: '25%', padding: '12px 20px'}}>
                             Status
                         </th>
-                        <th style={{ width: '15%', padding: '12px 20px' }}>
+                        <th style={{width: '15%', padding: '12px 20px'}}>
                             Date
                         </th>
                     </tr>
@@ -214,7 +214,7 @@ export default function OrderTable () {
                     {result.data &&
                         result.data.map((todo) => (
                             <tr key={todo.id}>
-                                <td style={{ padding: 0 }}>
+                                <td style={{padding: 0}}>
                                     <Link
                                         to={`/todos/${todo.id}`}
                                         // to={'/'}
@@ -272,7 +272,7 @@ export default function OrderTable () {
             <Box
                 className="Pagination-mobile"
                 sx={{
-                    display: { xs: 'flex', md: 'none' },
+                    display: {xs: 'flex', md: 'none'},
                     alignItems: 'center',
                 }}
             >
@@ -301,7 +301,7 @@ export default function OrderTable () {
                 sx={{
                     pt: 4,
                     gap: 1,
-                    [`& .${iconButtonClasses.root}`]: { borderRadius: '50%' },
+                    [`& .${iconButtonClasses.root}`]: {borderRadius: '50%'},
                     display: {
                         xs: 'none',
                         md: 'flex',
@@ -317,7 +317,7 @@ export default function OrderTable () {
                     Previous
                 </Button>
 
-                <Box sx={{ flex: 1 }}/>
+                <Box sx={{flex: 1}}/>
                 {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
                     <IconButton
                         key={page}
@@ -328,7 +328,7 @@ export default function OrderTable () {
                         {page}
                     </IconButton>
                 ))}
-                <Box sx={{ flex: 1 }}/>
+                <Box sx={{flex: 1}}/>
 
                 <Button
                     size="sm"

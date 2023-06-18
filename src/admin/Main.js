@@ -1,14 +1,14 @@
 // WordPress
-import { render, useContext } from '@wordpress/element'
+import {render, useContext} from '@wordpress/element'
 
 // Router
-import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
+import {HashRouter, Route, Routes, Navigate} from 'react-router-dom'
 
 // React Query
-import { QueryClientProvider, QueryClient } from 'react-query'
+import {QueryClientProvider, QueryClient} from 'react-query'
 
 // JoyUI
-import { CssVarsProvider } from '@mui/joy/styles'
+import {CssVarsProvider} from '@mui/joy/styles'
 import GlobalStyles from '@mui/joy/GlobalStyles'
 import CssBaseline from '@mui/joy/CssBaseline'
 import Box from '@mui/joy/Box'
@@ -23,10 +23,11 @@ import Todos from './components/todos/Todos'
 import Todo from './components/todos/Todo'
 import Sidebar from './components/Sidebar'
 import customTheme from './components/theme'
+import NewTodo from "./components/todos/NewTodo";
 
 const queryClient = new QueryClient()
 
-export default function Main () {
+export default function Main() {
     return (
         <CssVarsProvider disableTransitionOnChange theme={customTheme}>
             <GlobalStyles
@@ -69,7 +70,6 @@ export default function Main () {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 minWidth: 0,
-                                height: 'calc(100dvh - 32px)',
                                 gap: 1,
                             })}
                         >
@@ -92,6 +92,11 @@ export default function Main () {
                                     exact
                                     path={'/todos/:todoId'}
                                     element={<Todo/>}
+                                />
+                                <Route
+                                    exact
+                                    path={'/new-todo'}
+                                    element={<NewTodo/>}
                                 />
                             </Routes>
                         </Box>
