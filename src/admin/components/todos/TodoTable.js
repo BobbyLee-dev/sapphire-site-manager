@@ -33,30 +33,8 @@ import {
 } from 'react-feather'
 
 // Local Components
-
-const fetchTodos = async () => {
-    let path = 'wp/v2/sapphire_sm_todo',
-        options = {}
-
-    try {
-        options = await apiFetch({
-            path: path,
-            method: 'GET',
-        })
-    } catch (error) {
-        console.log('fetchSettings Errors:', error)
-    }
-
-    // apiFetch({ path: '/wp/v2/posts' }).then((posts) => {
-    //     console.log(posts)
-    // })
-
-    return options
-}
-
-export default function OrderTable() {
-    const [open,] = React.useState(false)
-    const renderFilters = () => (
+function renderFilters() {
+    (
         <>
             <FormControl size="sm">
                 <FormLabel>Status</FormLabel>
@@ -81,7 +59,30 @@ export default function OrderTable() {
             </FormControl>
         </>
     )
+}
 
+async function fetchTodos() {
+    let path = 'wp/v2/sapphire_sm_todo',
+        options = {}
+
+    try {
+        options = await apiFetch({
+            path: path,
+            method: 'GET',
+        })
+    } catch (error) {
+        console.log('fetchSettings Errors:', error)
+    }
+
+    // apiFetch({ path: '/wp/v2/posts' }).then((posts) => {
+    //     console.log(posts)
+    // })
+
+    return options
+}
+
+export default function OrderTable() {
+    const [open,] = React.useState(false)
     const result = useQuery('todos', fetchTodos)
 
     return (
