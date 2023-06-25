@@ -1,11 +1,13 @@
 // WordPress
 import apiFetch from '@wordpress/api-fetch'
+import {addQueryArgs} from "@wordpress/url";
+import {useEffect, useState} from "@wordpress/element";
 
 // Router
-import {Link} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 
 // React Query
-import {useQuery} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 
 // JoyUI
 import Box from '@mui/joy/Box'
@@ -31,6 +33,7 @@ import {
     Filter,
     Search,
 } from 'react-feather'
+
 
 // Local Components
 function renderFilters() {
@@ -61,29 +64,61 @@ function renderFilters() {
     )
 }
 
-async function fetchTodos() {
-    let path = 'wp/v2/sapphire_sm_todo',
-        options = {}
+function fetchTodos(page = 1, per_page = 10) {
+    let path = 'wp/v2/sapphire_sm_todo'
 
-    try {
-        options = await apiFetch({
-            path: path,
-            method: 'GET',
+    const query = {
+        page: page,
+        per_page: per_page,
+    };
+
+    return apiFetch({
+        path: addQueryArgs(path, query),
+        method: 'GET',
+        parse: false,
+    }).then((response) => {
+        return response.json().then((data) => {
+            return {
+                todos: data,
+                totalPages: response.headers.get('X-WP-TotalPages'),
+                totalTodos: response.headers.get('X-WP-Total')
+            }
         })
-    } catch (error) {
-        console.log('fetchSettings Errors:', error)
-    }
-
-    // apiFetch({ path: '/wp/v2/posts' }).then((posts) => {
-    //     console.log(posts)
-    // })
-
-    return options
+    });
 }
 
+
 export default function OrderTable() {
-    const [open,] = React.useState(false)
-    const result = useQuery('todos', fetchTodos)
+    const [open,] = useState(false)
+    const [page, setPage] = useState(1)
+    const queryClient = useQueryClient()
+    const navigate = useNavigate();
+
+    const {status, data, error, isFetching, isPreviousData} = useQuery({
+        queryKey: ['todos', page],
+        queryFn: () => fetchTodos(page),
+        keepPreviousData: true,
+        staleTime: 5000,
+    })
+    console.log(page)
+
+    const hasNext = data?.totalPages > page
+    console.log(hasNext)
+
+
+    console.log(data)
+
+    // console.log(hasNext)
+
+    // Prefetch the next page!
+    useEffect(() => {
+        if (!isPreviousData && hasNext) {
+            queryClient.prefetchQuery({
+                queryKey: ['todos', page + 1],
+                queryFn: () => fetchTodos(page + 1),
+            })
+        }
+    }, [data, isPreviousData, page, queryClient])
 
     return (
         <>
@@ -212,8 +247,8 @@ export default function OrderTable() {
                     </tr>
                     </thead>
                     <tbody>
-                    {result.data &&
-                        result.data.map((todo) => (
+                    {data &&
+                        data.todos.map((todo) => (
                             <tr key={todo.id}>
                                 <td style={{padding: 0}}>
                                     <Link
@@ -314,21 +349,29 @@ export default function OrderTable() {
                     variant="plain"
                     color="neutral"
                     startDecorator={<ArrowLeft className="feather"/>}
+                    onClick={() => setPage((old) => Math.max(old - 1, 0))}
+                    disabled={page === 1}
                 >
                     Previous
                 </Button>
 
-                <Box sx={{flex: 1}}/>
-                {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
-                    <IconButton
-                        key={page}
-                        size="sm"
-                        variant={Number(page) ? 'outlined' : 'plain'}
-                        color="neutral"
-                    >
-                        {page}
-                    </IconButton>
-                ))}
+                {/*<Box sx={{flex: 1}}/>*/}
+                {/*{['1', '2', '3', '…', '8', '9', '10'].map((page) => (*/}
+                {/*    <IconButton*/}
+                {/*        key={page}*/}
+                {/*        size="sm"*/}
+                {/*        variant={Number(page) ? 'outlined' : 'plain'}*/}
+                {/*        color="neutral"*/}
+                {/*    >*/}
+                {/*        {page}*/}
+                {/*    </IconButton>*/}
+                {/*))}*/}
+                {/*{*/}
+                {/*    // Since the last page's data potentially sticks around between page requests,*/}
+                {/*    // we can use `isFetching` to show a background loading*/}
+                {/*    // indicator since our `status === 'loading'` state won't be triggered*/}
+                {/*    isFetching ? <span> Loading...</span> : null*/}
+                {/*}{' '}*/}
                 <Box sx={{flex: 1}}/>
 
                 <Button
@@ -336,6 +379,10 @@ export default function OrderTable() {
                     variant="plain"
                     color="neutral"
                     endDecorator={<ArrowRight className="feather"/>}
+                    onClick={() => {
+                        setPage((old) => (hasNext ? old + 1 : old))
+                    }}
+                    disabled={isPreviousData || !hasNext}
                 >
                     Next
                 </Button>

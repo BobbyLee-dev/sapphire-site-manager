@@ -214,13 +214,84 @@ class Sapphire_Site_Manager_Admin {
             'publicly_queryable'  => false,
             'show_in_menu'        => 'sapphire-todos-settings',
             'show_in_nav_menus'   => false,
-            'supports'            => array( 'title', 'editor', 'thumbnail' => false ),
+            'supports'            => array(
+                'title',
+                'editor',
+                'thumbnail' => false,
+                'revisions',
+            ),
+            'taxonomies'          => array( 'sapphire_todo_status' ),
+            'can_export'          => true,
             'show_in_rest'        => true,
             'pages'               => false,
             'has_archive'         => false,
         );
 
         register_post_type( 'sapphire_sm_todo', $todoArgs );
+
+    }
+
+    /**
+     * Register custom taxomony for todo statuses.
+     *
+     * Not publicly visible
+     *
+     * @since    1.0.0
+     * @uses    register_post_type()
+     */
+    public static function create_status_taxonomy() {
+
+        if ( ! function_exists( 'sapphire_todo_status' ) ) {
+
+
+            $labels = array(
+                'name'                       => _x( 'Status', 'Taxonomy General Name', 'sapphire_site_manager' ),
+                'singular_name'              => _x( 'Status', 'Taxonomy Singular Name', 'sapphire_site_manager' ),
+                'menu_name'                  => __( 'Status', 'sapphire_site_manager' ),
+                'all_items'                  => __( 'All Statuses', 'sapphire_site_manager' ),
+                'parent_item'                => __( 'Parent Status', 'sapphire_site_manager' ),
+                'parent_item_colon'          => __( 'Parent Status:', 'sapphire_site_manager' ),
+                'new_item_name'              => __( 'New Status Name', 'sapphire_site_manager' ),
+                'add_new_item'               => __( 'Add New Status', 'sapphire_site_manager' ),
+                'edit_item'                  => __( 'Edit Status', 'sapphire_site_manager' ),
+                'update_item'                => __( 'Update Status', 'sapphire_site_manager' ),
+                'view_item'                  => __( 'View Status', 'sapphire_site_manager' ),
+                'separate_items_with_commas' => __( 'Separate Statuses with commas', 'sapphire_site_manager' ),
+                'add_or_remove_items'        => __( 'Add or remove Status', 'sapphire_site_manager' ),
+                'choose_from_most_used'      => __( 'Choose from the most used', 'sapphire_site_manager' ),
+                'popular_items'              => __( 'Popular Items', 'sapphire_site_manager' ),
+                'search_items'               => __( 'Search Statuses', 'sapphire_site_manager' ),
+                'not_found'                  => __( 'Not Found', 'sapphire_site_manager' ),
+                'no_terms'                   => __( 'No Statuses', 'sapphire_site_manager' ),
+                'items_list'                 => __( 'Status list', 'sapphire_site_manager' ),
+                'items_list_navigation'      => __( 'Statuses list navigation', 'sapphire_site_manager' ),
+            );
+            $args   = array(
+                'labels'            => $labels,
+                'hierarchical'      => true,
+                'public'            => false,
+                'show_ui'           => true,
+                'show_admin_column' => false,
+                'show_in_nav_menus' => false,
+//                'show_tagcloud'     => false,
+                'query_var'         => true,
+                'show_in_rest'      => true,
+                'default_term'      => array(
+                    'name' => 'Alaska',
+                    'slug' => 'alaska',
+                )
+            );
+            register_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), $args );
+
+            $terms = [ "Alaska", "Kansas", "New York" ];
+
+            foreach ( $terms as $term ) {
+                wp_insert_term( $term, 'sapphire_todo_status' );
+            }
+
+
+        }
+
 
     }
 
