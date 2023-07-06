@@ -13,6 +13,8 @@ import {Typography} from '@mui/joy'
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
 import {PlusSquare} from "react-feather";
+import Select from '@mui/joy/Select';
+import Option from '@mui/joy/Option';
 
 // Lodash
 import {isEmpty} from "lodash";
@@ -25,8 +27,9 @@ function fetchTodoById({queryKey}) {
     // Get todo ID from the query key
     const todoId = queryKey[1]
     const fetchTodo = async (todoId) => {
-        let path = 'wp/v2/sapphire_sm_todo/' + todoId,
-            options = {}
+        // let path = 'wp-json/v2/sapphire_sm_todo/' + todoId
+        let path = 'sapphire-site-manager/v1/todo/' + todoId
+        let options = {}
 
         try {
             options = await apiFetch({
@@ -85,6 +88,10 @@ export default function Todo(props) {
     } else {
         return (
             <>
+                <Select defaultValue="dog">
+                    <Option value="dog">Dog</Option>
+                    <Option value="cat">Cat</Option>
+                </Select>
                 <Box
                     sx={{
                         display: 'flex',
@@ -99,7 +106,7 @@ export default function Todo(props) {
                     }}
                 >
                     <Typography level="h1" fontSize="xl4">
-                        <div>{todoData.title.rendered}</div>
+                        <div>{todoData.post_title}</div>
                     </Typography>
                     <Box sx={{flex: 999}}/>
                     <Box
@@ -124,7 +131,7 @@ export default function Todo(props) {
 
                 <div className={`edit-sapphire-todo ${showTodoEdit}`}>
                     <EditToDoIframe
-                        src={`${window.location.origin}/wp-admin/post.php?post=${todoData.id}&action=edit`}/>
+                        src={`${window.location.origin}/wp-admin/post.php?post=${todoData.ID}&action=edit`}/>
                     <Button
                         className={`add-todo-back-btn`}
                         color="primary"

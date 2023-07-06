@@ -77,8 +77,9 @@ class Sapphire_Site_Manager {
         $this->load_dependencies();
         $this->set_locale();
         $this->define_admin_hooks();
+        $this->define_tax_radio_hooks();
         $this->define_public_hooks();
-
+        $this->define_api_hooks();
     }
 
     /**
@@ -117,10 +118,20 @@ class Sapphire_Site_Manager {
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-sapphire-site-manager-admin.php';
 
         /**
+         * The class responsible for converting custom taxonomy to radio buttons.
+         */
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class_sapphire_site_manager_radio_taxonomy.php';
+
+        /**
          * The class responsible for defining all actions that occur in the public-facing
          * side of the site.
          */
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-sapphire-site-manager-public.php';
+
+        /**
+         * The class responsible for defining To-do endpoints/extensions
+         */
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'api/class-sapphire-site-manager-todo-api.php';
 
         $this->loader = new Sapphire_Site_Manager_Loader();
 
@@ -144,7 +155,7 @@ class Sapphire_Site_Manager {
     }
 
     /**
-     * Register all of the hooks related to the admin area functionality
+     * Register all the hooks related to the admin area functionality
      * of the plugin.
      *
      * @since    1.0.0
@@ -163,7 +174,21 @@ class Sapphire_Site_Manager {
     }
 
     /**
-     * Register all of the hooks related to the public-facing functionality
+     * Register hooks for converting custom taxonomy to radio buttons
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_tax_radio_hooks() {
+
+        $plugin_radio_taxonomy = new Sapphire_site_manager_radio_taxonomy( 'sapphire_todo_status', 'sapphire_sm_todo' );
+
+        $this->loader->add_action( 'add_meta_boxes', $plugin_radio_taxonomy, 'add_radio_box' );
+
+    }
+
+    /**
+     * Register all the hooks related to the public-facing functionality
      * of the plugin.
      *
      * @since    1.0.0
@@ -179,7 +204,22 @@ class Sapphire_Site_Manager {
     }
 
     /**
-     * Run the loader to execute all of the hooks with WordPress.
+     * Register all the hooks related to the REST endpoints
+     *
+     * @since    1.0.0
+     * @access   private
+     */
+    private function define_api_hooks() {
+
+        $plugin_api = new Sapphire_Site_Manager_Rest_Api( $this->get_plugin_name(), $this->get_version() );
+
+        $this->loader->add_action( 'rest_api_init', $plugin_api, 'ssm_todo_routes' );
+
+
+    }
+
+    /**
+     * Run the loader to execute all the hooks with WordPress.
      *
      * @since    1.0.0
      */

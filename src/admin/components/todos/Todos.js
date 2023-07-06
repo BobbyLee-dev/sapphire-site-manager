@@ -21,54 +21,55 @@ import {useState} from "@wordpress/element";
 export default function Todos() {
 
     return (
-        <div className={`todo-page`}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    my: 0,
-                    gap: 1,
-                    flexWrap: 'wrap',
-                    '& > *': {
-                        minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
-                        flexGrow: 1,
-                    },
-                }}
-            >
-                <Typography level="h1" fontSize="xl4">
-                    To-Dos
-                </Typography>
-                <Box sx={{flex: 999}}/>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        gap: 1,
-                        '& > *': {flexGrow: 1},
-                    }}
-                >
-
-                    <Link
-                        to="/new-todo"
-                        style={{
-                            textDecoration: 'none',
-                            display: 'block',
-                            width: '100%',
-                        }}
-                    >
-                        <Button
-                            component={`div`}
-                            color="primary"
-                            variant="soft"
-                            underline="none"
-                            endDecorator={<PlusSquare className="feather"/>}
-                        >
-                            Add To-Do
-                        </Button>
-                    </Link>
-                </Box>
-            </Box>
-            <TodoTable/>
-
-        </div>
+        <TodoTable/>
+// <div className={`todo-page`}>
+        //     <Box
+        //         sx={{
+        //             display: 'flex',
+        //             alignItems: 'center',
+        //             my: 0,
+        //             gap: 1,
+        //             flexWrap: 'wrap',
+        //             '& > *': {
+        //                 minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
+        //                 flexGrow: 1,
+        //             },
+        //         }}
+        //     >
+        //         <Typography level="h1" fontSize="xl4">
+        //             To-Dos
+        //         </Typography>
+        //         <Box sx={{flex: 999}}/>
+        //         <Box
+        //             sx={{
+        //                 display: 'flex',
+        //                 gap: 1,
+        //                 '& > *': {flexGrow: 1},
+        //             }}
+        //         >
+        //
+        //             <Link
+        //                 to="/new-todo"
+        //                 style={{
+        //                     textDecoration: 'none',
+        //                     display: 'block',
+        //                     width: '100%',
+        //                 }}
+        //             >
+        //                 <Button
+        //                     component={`div`}
+        //                     color="primary"
+        //                     variant="soft"
+        //                     underline="none"
+        //                     endDecorator={<PlusSquare className="feather"/>}
+        //                 >
+        //                     Add To-Do
+        //                 </Button>
+        //             </Link>
+        //         </Box>
+        //     </Box>
+        //     <TodoTable/>
+        //
+        // </div>
     )
 }

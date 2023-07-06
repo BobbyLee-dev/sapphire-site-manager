@@ -2,7 +2,15 @@
 import {render, useContext} from '@wordpress/element'
 
 // Router
-import {HashRouter, Route, Routes, Navigate} from 'react-router-dom'
+import {
+    HashRouter,
+    Route,
+    Routes,
+    Navigate,
+    createHashRouter,
+    RouterProvider,
+    createBrowserRouter
+} from 'react-router-dom'
 
 // React Query
 import {QueryClientProvider, QueryClient} from 'react-query'

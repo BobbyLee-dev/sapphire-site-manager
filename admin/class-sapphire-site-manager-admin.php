@@ -270,20 +270,20 @@ class Sapphire_Site_Manager_Admin {
                 'labels'            => $labels,
                 'hierarchical'      => true,
                 'public'            => false,
-                'show_ui'           => true,
+                'show_ui'           => false,
                 'show_admin_column' => false,
                 'show_in_nav_menus' => false,
 //                'show_tagcloud'     => false,
                 'query_var'         => true,
                 'show_in_rest'      => true,
                 'default_term'      => array(
-                    'name' => 'Alaska',
-                    'slug' => 'alaska',
+                    'name' => 'In Progress',
+                    'slug' => 'in-progress',
                 )
             );
             register_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), $args );
 
-            $terms = [ "Alaska", "Kansas", "New York" ];
+            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
 
             foreach ( $terms as $term ) {
                 wp_insert_term( $term, 'sapphire_todo_status' );
