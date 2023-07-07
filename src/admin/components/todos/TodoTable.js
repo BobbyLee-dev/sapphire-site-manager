@@ -1,13 +1,13 @@
 // WordPress
 import apiFetch from '@wordpress/api-fetch'
-import {addQueryArgs} from "@wordpress/url";
-import {useEffect, useState} from "@wordpress/element";
+import { addQueryArgs } from '@wordpress/url'
+import { useEffect, useState } from '@wordpress/element'
 
 // Router
-import {Link, useNavigate} from 'react-router-dom'
+import { Link, useNavigate, useSearchParams, useParams } from 'react-router-dom'
 
 // React Query
-import {useQuery, useQueryClient} from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 
 // JoyUI
 import Box from '@mui/joy/Box'
@@ -23,9 +23,9 @@ import Select from '@mui/joy/Select'
 import Option from '@mui/joy/Option'
 import Table from '@mui/joy/Table'
 import Sheet from '@mui/joy/Sheet'
-import IconButton, {iconButtonClasses} from '@mui/joy/IconButton'
+import IconButton, { iconButtonClasses } from '@mui/joy/IconButton'
 import Typography from '@mui/joy/Typography'
-import Chip from "@mui/joy/Chip";
+import Chip from '@mui/joy/Chip'
 
 // Icons
 import {
@@ -35,112 +35,59 @@ import {
     Search,
 } from 'react-feather'
 
+function fetchTodos (page = 1, per_page = 10) {
 
-// Local Components
-function renderFilters() {
-    return (
-        <>
-            <FormControl size="sm">
-                <FormLabel>Status</FormLabel>
-                <Select
-                    placeholder="Filter by status"
-                    slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
-                    onChange={e => setTodoStatus(e.target.value)}
-                >
-                    <Option value="all">All</Option>
-                    <Option value="in-progress">In Progress</Option>
-                    <Option value="completed">Completed</Option>
-                    <Option value="not-started">Not Started</Option>
-                    <Option value="blocked">Blocked</Option>
-                    <Option value="back-log">Back Log</Option>
-                </Select>
-            </FormControl>
-
-            <FormControl size="sm">
-                <FormLabel>Category</FormLabel>
-                <Select placeholder="All">
-                    <Option value="all">All</Option>
-                </Select>
-            </FormControl>
-
-            <FormControl size="sm">
-                <FormLabel>Priority</FormLabel>
-                <Select
-                    placeholder="Filter by priority"
-                    slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
-                >
-                    <Option value="all">All</Option>
-                    <Option value="in-prog">High</Option>
-                    <Option value="completed">Med</Option>
-                    <Option value="not-started">Low</Option>
-                    <Option value="blocked">Not Set</Option>
-                </Select>
-            </FormControl>
-        </>
-    )
-}
-
-function fetchTodos(page = 1, per_page = 10) {
-
-    var endpoint = 'wp/v2/sapphire_sm_todo';
-
-    let allData = [];
-    let totalPages = 0;
-    // let path = 'wp/v2/sapphire_sm_todo'
     let path = 'sapphire-site-manager/v1/todos'
     const query = {
         page: page,
         per_page: 100,
-        // sapphire_todo_status: 9
     }
-
 
     return apiFetch({
         path: addQueryArgs(path, query),
         method: 'GET',
         parse: false,
     }).then((response) => {
-        // totalTodos = response.headers.get('X-WP-Total')
-        // totalPages = response.headers.get('X-WP-TotalPages')
-        // console.log(totalPages)
         return response.json().then((data) => {
-            console.log(data)
             return data
         })
-    });
+    })
 
 }
 
-
-export default function OrderTable(props) {
-    console.log(props)
+export default function OrderTable () {
+    let [searchParams, setSearchParams] = useSearchParams()
+    let statusParam = searchParams.get('status')
     const [open,] = useState(false)
     const [page, setPage] = useState(1)
     const queryClient = useQueryClient()
-    const navigate = useNavigate();
-    const [todoStatus, setTodoStatus] = useState('All');
-    const [todoStatusName, setTodoStatusName] = useState('All');
-    let todoCount = 0;
+    const navigate = useNavigate()
+    const [todoStatus, setTodoStatus] = useState(statusParam || 'sapphire-todo-status-in-progress')
+    const [todoStatusName, setTodoStatusName] = useState('All')
+    let todoCount = 0
 
-    const {status, data, error, isFetching, isPreviousData} = useQuery({
+    const { status, data, error, isFetching, isPreviousData } = useQuery({
         queryKey: ['todos', page],
         queryFn: () => fetchTodos(page),
         keepPreviousData: true,
         staleTime: 5000,
     })
 
-    function updateStatus(e, newValue) {
+    function updateStatus (e, newValue) {
         setTodoStatus(newValue)
         setTodoStatusName(e.target.innerText)
+        setSearchParams({ status: newValue })
     }
 
-
-    let todos = data;
+    let todos = data
     if (todos) {
-        todos = todos.filter(todo => todo.status === todoStatus);
-        todoCount = todos.length;
+        if (statusParam) {
+            todos = todos.filter(todo => todo.status === statusParam)
+        }
+
+        todoCount = todos.length
     }
-    // console.log(todos)
+    console.log(searchParams.get('status'))
 
     return (
         <>
@@ -161,12 +108,12 @@ export default function OrderTable(props) {
                     <Typography level="h1" fontSize="xl4">
                         To-Dos: {todoStatusName} ({todoCount})
                     </Typography>
-                    <Box sx={{flex: 999}}/>
+                    <Box sx={{ flex: 999 }}/>
                     <Box
                         sx={{
                             display: 'flex',
                             gap: 1,
-                            '& > *': {flexGrow: 1},
+                            '& > *': { flexGrow: 1 },
                         }}
                     >
 
@@ -207,7 +154,7 @@ export default function OrderTable(props) {
                         size="sm"
                         placeholder="Search"
                         startDecorator={<Search className="feather"/>}
-                        sx={{flexGrow: 1}}
+                        sx={{ flexGrow: 1 }}
                     />
                     <IconButton
                         size="sm"
@@ -226,7 +173,7 @@ export default function OrderTable(props) {
                             <Typography id="filter-modal" level="h2">
                                 Filters
                             </Typography>
-                            <Divider sx={{my: 2}}/>
+                            <Divider sx={{ my: 2 }}/>
                             <Sheet
                                 sx={{
                                     display: 'flex',
@@ -234,7 +181,6 @@ export default function OrderTable(props) {
                                     gap: 2,
                                 }}
                             >
-                                {renderFilters()}
                                 <Button
                                     color="primary"
                                     onClick={() => setOpen(false)}
@@ -264,7 +210,7 @@ export default function OrderTable(props) {
                         },
                     }}
                 >
-                    <FormControl sx={{flex: 1}} size="sm">
+                    <FormControl sx={{ flex: 1 }} size="sm">
                         <FormLabel>Search for To-do</FormLabel>
                         <Input
                             placeholder="Search"
@@ -276,7 +222,7 @@ export default function OrderTable(props) {
                         <FormLabel>Status</FormLabel>
                         <Select
                             // placeholder="Filter by status"
-                            slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                            slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                             // onChange={(e, newValue) => setTodoStatus(newValue)}
                             defaultValue={`sapphire-todo-status-in-progress`}
                             onChange={(e, newValue) => updateStatus(e, newValue)}
@@ -295,7 +241,7 @@ export default function OrderTable(props) {
                         <FormLabel>Priority</FormLabel>
                         <Select
                             placeholder="Filter by priority"
-                            slotProps={{button: {sx: {whiteSpace: 'nowrap'}}}}
+                            slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
                         >
                             <Option value="all">All</Option>
                             <Option value="in-prog">High</Option>
@@ -339,10 +285,10 @@ export default function OrderTable(props) {
                             >
                                 Title
                             </th>
-                            <th style={{width: '15%', padding: '12px 20px'}}>
+                            <th style={{ width: '15%', padding: '12px 20px' }}>
                                 Status
                             </th>
-                            <th style={{width: '15%', padding: '12px 20px'}}>
+                            <th style={{ width: '15%', padding: '12px 20px' }}>
                                 Priority
                             </th>
                         </tr>
@@ -351,7 +297,7 @@ export default function OrderTable(props) {
                         {todos &&
                             todos.map((todo) => (
                                 <tr key={todo.ID}>
-                                    <td style={{padding: 0}}>
+                                    <td style={{ padding: 0 }}>
                                         <Link
                                             to={`/todos/${todo.ID}`}
                                             // to={'/'}

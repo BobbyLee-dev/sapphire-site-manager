@@ -9,7 +9,8 @@ import {
     Navigate,
     createHashRouter,
     RouterProvider,
-    createBrowserRouter
+    createBrowserRouter,
+    createRoutesFromElements
 } from 'react-router-dom'
 
 // React Query
@@ -50,8 +51,8 @@ export default function Main() {
                 }}
             />
             <CssBaseline/>
-            <HashRouter basename="/">
-                <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={queryClient}>
+                <HashRouter basename="/">
                     <Box
                         sx={{
                             display: 'flex',
@@ -109,8 +110,8 @@ export default function Main() {
                             </Routes>
                         </Box>
                     </Box>
-                </QueryClientProvider>
-            </HashRouter>
+                </HashRouter>
+            </QueryClientProvider>
         </CssVarsProvider>
     )
 }
