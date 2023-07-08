@@ -6,7 +6,7 @@ import { useEffect, useState } from '@wordpress/element'
 // Router
 import { Link, useNavigate, useSearchParams, useParams } from 'react-router-dom'
 
-// React Query
+// TanStack React Query
 import { useQuery, useQueryClient } from 'react-query'
 
 // JoyUI
@@ -35,12 +35,12 @@ import {
     Search,
 } from 'react-feather'
 
-function fetchTodos (page = 1, per_page = 10) {
+function fetchTodos () {
 
     let path = 'sapphire-site-manager/v1/todos'
     const query = {
-        page: page,
-        per_page: 100,
+        // page: page,
+        // per_page: 100,
     }
 
     return apiFetch({
@@ -56,38 +56,63 @@ function fetchTodos (page = 1, per_page = 10) {
 }
 
 export default function OrderTable () {
+    const parentRef = React.useRef()
     let [searchParams, setSearchParams] = useSearchParams()
     let statusParam = searchParams.get('status')
     const [open,] = useState(false)
-    const [page, setPage] = useState(1)
     const queryClient = useQueryClient()
     const navigate = useNavigate()
-    const [todoStatus, setTodoStatus] = useState(statusParam || 'sapphire-todo-status-in-progress')
-    const [todoStatusName, setTodoStatusName] = useState('All')
     let todoCount = 0
 
+    const statusOptions = {
+        'not-completed': 'Not Completed',
+        'in-progress': 'In Progress',
+        'not-started': 'Not Started',
+        'needs-review': 'Needs Review',
+        'completed': 'Completed',
+        'back-log': 'Back Log',
+        'all': 'All'
+    }
+
+    const [todoStatus, setTodoStatus] = useState(statusParam || 'not-completed')
+    const [todoStatusName, setTodoStatusName] = useState(statusOptions[statusParam] || 'Not Completed')
+
     const { status, data, error, isFetching, isPreviousData } = useQuery({
-        queryKey: ['todos', page],
-        queryFn: () => fetchTodos(page),
+        queryKey: ['todos'],
+        queryFn: () => fetchTodos(),
         keepPreviousData: true,
         staleTime: 5000,
     })
+
+    let todos = data
+
+    if (todos) {
+
+        // Default show not completed
+        if (statusParam === null || statusParam === 'not-completed') {
+            todos = todos.filter(todo => todo.status !== 'completed')
+        }
+
+        // Show status selected
+        if (statusParam !== null && statusParam !== 'not-completed') {
+            todos = todos.filter(todo => {
+                if (statusParam === 'all') {
+                    return todo
+                }
+
+                return todo.status === statusParam
+
+            })
+        }
+
+        todoCount = todos.length
+    }
 
     function updateStatus (e, newValue) {
         setTodoStatus(newValue)
         setTodoStatusName(e.target.innerText)
         setSearchParams({ status: newValue })
     }
-
-    let todos = data
-    if (todos) {
-        if (statusParam) {
-            todos = todos.filter(todo => todo.status === statusParam)
-        }
-
-        todoCount = todos.length
-    }
-    console.log(searchParams.get('status'))
 
     return (
         <>
@@ -106,7 +131,7 @@ export default function OrderTable () {
                     }}
                 >
                     <Typography level="h1" fontSize="xl4">
-                        To-Dos: {todoStatusName} ({todoCount})
+                        To-Dos: {statusOptions[statusParam] || 'Not Completed'} {todoCount !== 0 && (`(${todoCount})`)}
                     </Typography>
                     <Box sx={{ flex: 999 }}/>
                     <Box
@@ -221,19 +246,19 @@ export default function OrderTable () {
                     <FormControl size="sm">
                         <FormLabel>Status</FormLabel>
                         <Select
-                            // placeholder="Filter by status"
                             slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
-                            // onChange={(e, newValue) => setTodoStatus(newValue)}
-                            defaultValue={`sapphire-todo-status-in-progress`}
+                            defaultValue={todoStatus}
+                            value={statusParam || 'not-completed'}
                             onChange={(e, newValue) => updateStatus(e, newValue)}
                         >
-                            <Option value="sapphire-todo-status-in-progress">In Progress</Option>
-                            <Option value="sapphire-todo-status-not-started">Not Started</Option>
-                            <Option value="sapphire-todo-status-needs-review">Needs Review</Option>
-                            <Option value="sapphire-todo-status-completed">Completed</Option>
-                            <Option value="sapphire-todo-status-blocked">Blocked</Option>
-                            <Option value="sapphire-todo-status-back-log">Back Log</Option>
-                            <Option value="all">All</Option>
+
+                            {
+                                Object.keys(statusOptions).map((oneKey, i) => {
+                                    return (
+                                        <Option key={oneKey} value={oneKey}>{statusOptions[oneKey]}</Option>
+                                    )
+                                })
+                            }
                         </Select>
                     </FormControl>
 

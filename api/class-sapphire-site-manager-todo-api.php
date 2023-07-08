@@ -81,17 +81,25 @@ class Sapphire_Site_Manager_Rest_Api {
         $args = array(
             'post_type'      => 'sapphire_sm_todo',
             'posts_per_page' => - 1,
+            'post_status'    => array(
+                'publish',
+                'pending',
+                'draft',
+//                'auto-draft',
+//                'future',
+                'private',
+                'inherit',
+                'trash'
+            )
         );
 
 
         $query = new WP_Query( $args );
 
         foreach ( $query->posts as $todo ) {
-            $todo->test        = 'lol';
             $status_terms      = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
-            $todo->status      = ! empty( $status_terms ) ? $status_terms[ 0 ]->slug : 'sapphire-todo-status-not-started';
+            $todo->status      = ! empty( $status_terms ) ? $status_terms[ 0 ]->slug : 'not-started';
             $todo->status_name = ! empty( $status_terms ) ? $status_terms[ 0 ]->name : 'Not Started';
-
         }
 
         wp_reset_postdata();

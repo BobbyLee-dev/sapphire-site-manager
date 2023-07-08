@@ -220,7 +220,7 @@ class Sapphire_Site_Manager_Admin {
                 'thumbnail' => false,
                 'revisions',
             ),
-            'taxonomies'          => array( 'sapphire_todo_status' ),
+            'taxonomies'          => array( 'sapphire_todo_status', 'sapphire_todo_priority' ),
             'can_export'          => true,
             'show_in_rest'        => true,
             'pages'               => false,
@@ -239,58 +239,96 @@ class Sapphire_Site_Manager_Admin {
      * @since    1.0.0
      * @uses    register_post_type()
      */
-    public static function create_status_taxonomy() {
+    public static function create_todo_taxonomies() {
 
-        if ( ! function_exists( 'sapphire_todo_status' ) ) {
+        $todo_status_labels = array(
+            'name'                       => _x( 'Status', 'Taxonomy General Name', 'sapphire_site_manager' ),
+            'singular_name'              => _x( 'Status', 'Taxonomy Singular Name', 'sapphire_site_manager' ),
+            'menu_name'                  => __( 'Status', 'sapphire_site_manager' ),
+            'all_items'                  => __( 'All Statuses', 'sapphire_site_manager' ),
+            'parent_item'                => __( 'Parent Status', 'sapphire_site_manager' ),
+            'parent_item_colon'          => __( 'Parent Status:', 'sapphire_site_manager' ),
+            'new_item_name'              => __( 'New Status Name', 'sapphire_site_manager' ),
+            'add_new_item'               => __( 'Add New Status', 'sapphire_site_manager' ),
+            'edit_item'                  => __( 'Edit Status', 'sapphire_site_manager' ),
+            'update_item'                => __( 'Update Status', 'sapphire_site_manager' ),
+            'view_item'                  => __( 'View Status', 'sapphire_site_manager' ),
+            'separate_items_with_commas' => __( 'Separate Statuses with commas', 'sapphire_site_manager' ),
+            'add_or_remove_items'        => __( 'Add or remove Status', 'sapphire_site_manager' ),
+            'choose_from_most_used'      => __( 'Choose from the most used', 'sapphire_site_manager' ),
+            'popular_items'              => __( 'Popular Items', 'sapphire_site_manager' ),
+            'search_items'               => __( 'Search Statuses', 'sapphire_site_manager' ),
+            'not_found'                  => __( 'Not Found', 'sapphire_site_manager' ),
+            'no_terms'                   => __( 'No Statuses', 'sapphire_site_manager' ),
+            'items_list'                 => __( 'Status list', 'sapphire_site_manager' ),
+            'items_list_navigation'      => __( 'Statuses list navigation', 'sapphire_site_manager' ),
+        );
+        $todo_status_args   = array(
+            'labels'            => $todo_status_labels,
+            'hierarchical'      => true,
+            'public'            => false,
+            'show_ui'           => true,
+            'show_admin_column' => false,
+            'show_in_nav_menus' => false,
+            'query_var'         => true,
+            'show_in_rest'      => true,
+//                'default_term'      => array(
+//                    'name' => 'In Progress',
+//                    'slug' => 'in-progress',
+//                )
+        );
+        register_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), $todo_status_args );
 
-
-            $labels = array(
-                'name'                       => _x( 'Status', 'Taxonomy General Name', 'sapphire_site_manager' ),
-                'singular_name'              => _x( 'Status', 'Taxonomy Singular Name', 'sapphire_site_manager' ),
-                'menu_name'                  => __( 'Status', 'sapphire_site_manager' ),
-                'all_items'                  => __( 'All Statuses', 'sapphire_site_manager' ),
-                'parent_item'                => __( 'Parent Status', 'sapphire_site_manager' ),
-                'parent_item_colon'          => __( 'Parent Status:', 'sapphire_site_manager' ),
-                'new_item_name'              => __( 'New Status Name', 'sapphire_site_manager' ),
-                'add_new_item'               => __( 'Add New Status', 'sapphire_site_manager' ),
-                'edit_item'                  => __( 'Edit Status', 'sapphire_site_manager' ),
-                'update_item'                => __( 'Update Status', 'sapphire_site_manager' ),
-                'view_item'                  => __( 'View Status', 'sapphire_site_manager' ),
-                'separate_items_with_commas' => __( 'Separate Statuses with commas', 'sapphire_site_manager' ),
-                'add_or_remove_items'        => __( 'Add or remove Status', 'sapphire_site_manager' ),
-                'choose_from_most_used'      => __( 'Choose from the most used', 'sapphire_site_manager' ),
-                'popular_items'              => __( 'Popular Items', 'sapphire_site_manager' ),
-                'search_items'               => __( 'Search Statuses', 'sapphire_site_manager' ),
-                'not_found'                  => __( 'Not Found', 'sapphire_site_manager' ),
-                'no_terms'                   => __( 'No Statuses', 'sapphire_site_manager' ),
-                'items_list'                 => __( 'Status list', 'sapphire_site_manager' ),
-                'items_list_navigation'      => __( 'Statuses list navigation', 'sapphire_site_manager' ),
-            );
-            $args   = array(
-                'labels'            => $labels,
-                'hierarchical'      => true,
-                'public'            => false,
-                'show_ui'           => false,
-                'show_admin_column' => false,
-                'show_in_nav_menus' => false,
-//                'show_tagcloud'     => false,
-                'query_var'         => true,
-                'show_in_rest'      => true,
-                'default_term'      => array(
-                    'name' => 'In Progress',
-                    'slug' => 'in-progress',
-                )
-            );
-            register_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), $args );
-
-            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
-
-            foreach ( $terms as $term ) {
-                wp_insert_term( $term, 'sapphire_todo_status' );
-            }
+//            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
+//
+//            foreach ( $terms as $term ) {
+//                wp_insert_term( $term, 'sapphire_todo_status' );
+//            }
 
 
-        }
+        $todo_priority_labels = array(
+            'name'                       => _x( 'Priority', 'Taxonomy General Name', 'sapphire_site_manager' ),
+            'singular_name'              => _x( 'Priority', 'Taxonomy Singular Name', 'sapphire_site_manager' ),
+            'menu_name'                  => __( 'Priority', 'sapphire_site_manager' ),
+            'all_items'                  => __( 'All Priorities', 'sapphire_site_manager' ),
+            'parent_item'                => __( 'Parent Priority', 'sapphire_site_manager' ),
+            'parent_item_colon'          => __( 'Parent Priority:', 'sapphire_site_manager' ),
+            'new_item_name'              => __( 'New Priority Name', 'sapphire_site_manager' ),
+            'add_new_item'               => __( 'Add New Priority', 'sapphire_site_manager' ),
+            'edit_item'                  => __( 'Edit Priority', 'sapphire_site_manager' ),
+            'update_item'                => __( 'Update Priority', 'sapphire_site_manager' ),
+            'view_item'                  => __( 'View Priority', 'sapphire_site_manager' ),
+            'separate_items_with_commas' => __( 'Separate Priorities with commas', 'sapphire_site_manager' ),
+            'add_or_remove_items'        => __( 'Add or remove Priority', 'sapphire_site_manager' ),
+            'choose_from_most_used'      => __( 'Choose from the most used', 'sapphire_site_manager' ),
+            'popular_items'              => __( 'Popular Items', 'sapphire_site_manager' ),
+            'search_items'               => __( 'Search Priorities', 'sapphire_site_manager' ),
+            'not_found'                  => __( 'Not Found', 'sapphire_site_manager' ),
+            'no_terms'                   => __( 'No Priorities', 'sapphire_site_manager' ),
+            'items_list'                 => __( 'Priority list', 'sapphire_site_manager' ),
+            'items_list_navigation'      => __( 'Priorities list navigation', 'sapphire_site_manager' ),
+        );
+        $todo_priority_args   = array(
+            'labels'            => $todo_priority_labels,
+            'hierarchical'      => true,
+            'public'            => false,
+            'show_ui'           => true,
+            'show_admin_column' => false,
+            'show_in_nav_menus' => false,
+            'query_var'         => true,
+            'show_in_rest'      => true,
+//                'default_term'      => array(
+//                    'name' => 'In Progress',
+//                    'slug' => 'in-progress',
+//                )
+        );
+        register_taxonomy( 'sapphire_todo_priority', array( 'sapphire_sm_todo' ), $todo_priority_args );
+
+//            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
+//
+//            foreach ( $terms as $term ) {
+//                wp_insert_term( $term, 'sapphire_todo_Priority' );
+//            }
 
 
     }

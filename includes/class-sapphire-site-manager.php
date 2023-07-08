@@ -166,7 +166,7 @@ class Sapphire_Site_Manager {
         $plugin_admin = new Sapphire_Site_Manager_Admin( $this->get_plugin_name(), $this->get_version() );
         $this->loader->add_action( 'admin_menu', $plugin_admin, 'add_admin_menu' );
         $this->loader->add_action( 'init', $plugin_admin, 'new_cpt_todo' );
-        $this->loader->add_action( 'init', $plugin_admin, 'create_status_taxonomy' );
+        $this->loader->add_action( 'init', $plugin_admin, 'create_todo_taxonomies' );
 
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
         $this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
