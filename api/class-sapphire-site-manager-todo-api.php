@@ -97,14 +97,29 @@ class Sapphire_Site_Manager_Rest_Api {
         $query = new WP_Query( $args );
 
         foreach ( $query->posts as $todo ) {
-            $status_terms      = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
-            $todo->status      = ! empty( $status_terms ) ? $status_terms[ 0 ]->slug : 'not-started';
-            $todo->status_name = ! empty( $status_terms ) ? $status_terms[ 0 ]->name : 'Not Started';
+            $status_terms        = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
+            $priority_terms      = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_priority' ) );
+            $todo->status        = ! empty( $status_terms ) ? $status_terms[ 0 ]->slug : 'not-started';
+            $todo->status_name   = ! empty( $status_terms ) ? $status_terms[ 0 ]->name : 'Not Started';
+            $todo->priority      = ! empty( $priority_terms ) ? $priority_terms[ 0 ]->slug : 'not-set';
+            $todo->priority_name = ! empty( $priority_terms ) ? $priority_terms[ 0 ]->name : 'Not Set';
         }
 
         wp_reset_postdata();
 
-        return $query->posts;
+        return [
+            'statuses'   => get_terms( 'sapphire_todo_status', array(
+                'hide_empty' => false,
+                'orderby'    => 'term_order',
+//                'order'     => 'DESC'
+            ) ),
+            'priorities' => get_terms( 'sapphire_todo_priority', array(
+                'hide_empty' => false,
+                'orderby'    => 'term_order',
+//                'order'     => 'DESC'
+            ) ),
+            'all_todos'  => $query->posts,
+        ];
     }
 
     /**

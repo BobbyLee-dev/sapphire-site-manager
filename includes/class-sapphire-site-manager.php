@@ -181,9 +181,12 @@ class Sapphire_Site_Manager {
      */
     private function define_tax_radio_hooks() {
 
-        $plugin_radio_taxonomy = new Sapphire_site_manager_radio_taxonomy( 'sapphire_todo_status', 'sapphire_sm_todo' );
+        $plugin_status_taxonomy   = new Sapphire_site_manager_radio_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), 'Not Started' );
+        $plugin_priority_taxonomy = new Sapphire_site_manager_radio_taxonomy( 'sapphire_todo_priority', array( 'sapphire_sm_todo' ), 'Not Set' );
 
-        $this->loader->add_action( 'add_meta_boxes', $plugin_radio_taxonomy, 'add_radio_box' );
+        $this->loader->add_action( 'rest_prepare_taxonomy', $plugin_status_taxonomy, 'add_radio_box' );
+        $this->loader->add_action( 'rest_prepare_taxonomy', $plugin_priority_taxonomy, 'add_radio_box' );
+//        add_action( 'add_meta_boxes', $plugin_radio_taxonomy );
 
     }
 

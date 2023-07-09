@@ -59,23 +59,18 @@ export default function OrderTable () {
     const parentRef = React.useRef()
     let [searchParams, setSearchParams] = useSearchParams()
     let statusParam = searchParams.get('status')
+    let priorityParam = searchParams.get('priority')
     const [open,] = useState(false)
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     let todoCount = 0
-
-    const statusOptions = {
-        'not-completed': 'Not Completed',
-        'in-progress': 'In Progress',
-        'not-started': 'Not Started',
-        'needs-review': 'Needs Review',
-        'completed': 'Completed',
-        'back-log': 'Back Log',
-        'all': 'All'
-    }
+    const statusOptions = {}
+    const priorityOptions = {}
 
     const [todoStatus, setTodoStatus] = useState(statusParam || 'not-completed')
-    const [todoStatusName, setTodoStatusName] = useState(statusOptions[statusParam] || 'Not Completed')
+    const [todoStatusName, setTodoStatusName] = useState('Not Completed')
+    const [todoPriority, setTodoPriority] = useState(priorityParam || 'all')
+    const [todoPriorityName, setTodoPriorityName] = useState('All')
 
     const { status, data, error, isFetching, isPreviousData } = useQuery({
         queryKey: ['todos'],
@@ -84,10 +79,12 @@ export default function OrderTable () {
         staleTime: 5000,
     })
 
-    let todos = data
+    let todos = []
 
-    if (todos) {
+    // Filters
+    if (data) {
 
+        todos = data.all_todos
         // Default show not completed
         if (statusParam === null || statusParam === 'not-completed') {
             todos = todos.filter(todo => todo.status !== 'completed')
@@ -105,13 +102,59 @@ export default function OrderTable () {
             })
         }
 
+        // Filter by Priority
+        if (priorityParam !== null && priorityParam !== 'all') {
+            console.log(priorityParam)
+            todos = todos.filter(todo => {
+                // console.log(todo)
+                return todo.priority === priorityParam
+            })
+        }
+
+        // Build Status options
+        statusOptions['not-started'] = 'Not Started'
+        data.statuses.forEach(statusItem => {
+            statusOptions[statusItem.slug] = statusItem.name
+        })
+        statusOptions['not-completed'] = 'Not Completed'
+        statusOptions['all'] = 'All'
+
+        // Build priority options
+        priorityOptions['all'] = 'All'
+        data.priorities.forEach(priorityItem => {
+            priorityOptions[priorityItem.slug] = priorityItem.name
+        })
+
         todoCount = todos.length
+
     }
 
     function updateStatus (e, newValue) {
-        setTodoStatus(newValue)
-        setTodoStatusName(e.target.innerText)
-        setSearchParams({ status: newValue })
+        if (newValue) {
+            setTodoStatus(newValue)
+            searchParams.set('status', newValue)
+            setSearchParams(searchParams)
+            // setSearchParams({ status: newValue })
+        }
+
+        if (e) {
+            setTodoStatusName(e.target.innerText)
+        }
+    }
+
+    function updatePriority (e, newValue) {
+        if (newValue) {
+            setTodoPriority(newValue)
+
+            searchParams.set('priority', newValue)
+            setSearchParams(searchParams)
+            // setSearchParams({ priority: newValue })
+        }
+
+        if (e) {
+
+            setTodoStatusName(e.target.innerText)
+        }
     }
 
     return (
@@ -131,7 +174,12 @@ export default function OrderTable () {
                     }}
                 >
                     <Typography level="h1" fontSize="xl4">
-                        To-Dos: {statusOptions[statusParam] || 'Not Completed'} {todoCount !== 0 && (`(${todoCount})`)}
+
+                        To-Dos: {data && (
+                        <>
+                            <span>Status - {statusOptions[statusParam] || 'Not Completed'}</span>
+                        </>
+                    )}
                     </Typography>
                     <Box sx={{ flex: 999 }}/>
                     <Box
@@ -243,38 +291,48 @@ export default function OrderTable () {
                         />
                     </FormControl>
 
-                    <FormControl size="sm">
-                        <FormLabel>Status</FormLabel>
-                        <Select
-                            slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
-                            defaultValue={todoStatus}
-                            value={statusParam || 'not-completed'}
-                            onChange={(e, newValue) => updateStatus(e, newValue)}
-                        >
+                    {data && (
+                        <>
+                            <FormControl size="sm">
+                                <FormLabel>Status</FormLabel>
+                                <Select
+                                    slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
+                                    defaultValue={todoStatus}
+                                    value={statusParam || 'not-completed'}
+                                    onChange={(e, newValue) => updateStatus(e, newValue)}
+                                >
 
-                            {
-                                Object.keys(statusOptions).map((oneKey, i) => {
-                                    return (
-                                        <Option key={oneKey} value={oneKey}>{statusOptions[oneKey]}</Option>
-                                    )
-                                })
-                            }
-                        </Select>
-                    </FormControl>
+                                    {
+                                        Object.keys(statusOptions).map((oneKey, i) => {
+                                            return (
+                                                <Option key={oneKey} value={oneKey}>{statusOptions[oneKey]}</Option>
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            </FormControl>
 
-                    <FormControl size="sm">
-                        <FormLabel>Priority</FormLabel>
-                        <Select
-                            placeholder="Filter by priority"
-                            slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
-                        >
-                            <Option value="all">All</Option>
-                            <Option value="in-prog">High</Option>
-                            <Option value="completed">Med</Option>
-                            <Option value="not-started">Low</Option>
-                            <Option value="blocked">Not Set</Option>
-                        </Select>
-                    </FormControl>
+                            <FormControl size="sm">
+                                <FormLabel>Priority</FormLabel>
+                                <Select
+                                    slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
+                                    defaultValue={todoPriority}
+                                    value={priorityParam || 'all'}
+                                    onChange={(e, newValue) => updatePriority(e, newValue)}
+                                >
+                                    {
+                                        Object.keys(priorityOptions).map((oneKey, i) => {
+                                            return (
+                                                <Option key={oneKey} value={oneKey}>{priorityOptions[oneKey]}</Option>
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            </FormControl>
+                        </>
+                    )}
+
+
                 </Box>
                 <Sheet
                     className="OrderTableContainer"
@@ -376,7 +434,7 @@ export default function OrderTable () {
                                             variant="soft"
                                             size="sm"
                                         >
-                                            {todo.status_name}
+                                            {todo.priority_name}
                                         </Chip>
                                     </td>
 

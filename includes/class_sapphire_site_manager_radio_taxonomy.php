@@ -16,6 +16,7 @@ class Sapphire_site_manager_radio_taxonomy {
     public $context = 'side';
     // Set to true to hide "None" option & force a term selection
     public $force_selection = false;
+    public $default_selection = '';
 
     /**
      * Initiates our metabox action
@@ -23,9 +24,10 @@ class Sapphire_site_manager_radio_taxonomy {
      * @param string $tax_slug Taxonomy slug
      * @param array $post_types post-types to display custom metabox
      */
-    public function __construct( $tax_slug, $post_types = array() ) {
-        $this->slug       = $tax_slug;
-        $this->post_types = is_array( $post_types ) ? $post_types : array( $post_types );
+    public function __construct( $tax_slug, $post_types = array(), $default_selection = '' ) {
+        $this->slug              = $tax_slug;
+        $this->post_types        = is_array( $post_types ) ? $post_types : array( $post_types );
+        $this->default_selection = $default_selection;
 //        add_action( 'add_meta_boxes', array( $this, 'add_radio_box' ) );
     }
 
@@ -35,9 +37,9 @@ class Sapphire_site_manager_radio_taxonomy {
     public function add_radio_box() {
         foreach ( $this->post_types() as $key => $cpt ) {
             // remove default category type metabox
-            remove_meta_box( $this->slug . 'div', $cpt, 'side' );
+            remove_meta_box( $this->slug . 'div', $cpt, 'normal' );
             // remove default tag type metabox
-            remove_meta_box( 'tagsdiv-' . $this->slug, $cpt, 'side' );
+//            remove_meta_box( 'tagsdiv-' . $this->slug, $cpt, 'side' );
             // add our custom radio box
             add_meta_box( $this->slug . '_radio', $this->metabox_title(), array(
                 $this,
@@ -70,11 +72,11 @@ class Sapphire_site_manager_radio_taxonomy {
         echo '<div style="margin-bottom: 5px;">
          <ul id="' . $this->slug . '_taxradiolist" data-wp-lists="list:' . $this->slug . '_tax" class="categorychecklist form-no-clear">';
         // If 'category,' force a selection, or force_selection is true
-        if ( $this->slug != 'category' && ! $this->force_selection ) {
+        if ( $this->slug != 'category' && ! $this->force_selection && $this->default_selection ) {
             // our radio for selecting none
             echo '<li id="' . $this->slug . '_tax-0"><label><input value="' . $default_val . '" type="radio" name="' . $name . '" id="in-' . $this->slug . '_tax-0" ';
             checked( empty( $existing ) );
-            echo '> ' . __( 'Not Started', 'sapphire_site_manager' ) . '</label></li>';
+            echo '> ' . __( $this->default_selection, 'sapphire_site_manager' ) . '</label></li>';
         }
         // loop our terms and check if they're associated with this post
         foreach ( $terms as $term ) {

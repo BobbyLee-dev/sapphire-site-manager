@@ -264,26 +264,28 @@ class Sapphire_Site_Manager_Admin {
             'items_list_navigation'      => __( 'Statuses list navigation', 'sapphire_site_manager' ),
         );
         $todo_status_args   = array(
-            'labels'            => $todo_status_labels,
-            'hierarchical'      => true,
-            'public'            => false,
-            'show_ui'           => true,
-            'show_admin_column' => false,
-            'show_in_nav_menus' => false,
-            'query_var'         => true,
-            'show_in_rest'      => true,
-//                'default_term'      => array(
-//                    'name' => 'In Progress',
-//                    'slug' => 'in-progress',
-//                )
+            'labels'             => $todo_status_labels,
+            'hierarchical'       => true,
+            'public'             => false,
+            'show_ui'            => true,
+            'show_admin_column'  => true,
+            'show_in_nav_menus'  => false,
+            'query_var'          => true,
+            'show_in_rest'       => true,
+            'show_in_quick_edit' => false,
+            'meta_box_cb'        => false,
+//            'default_term'       => array(
+//                'name' => 'Completed',
+//                'slug' => 'completed',
+//            )
         );
         register_taxonomy( 'sapphire_todo_status', array( 'sapphire_sm_todo' ), $todo_status_args );
 
-//            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
-//
-//            foreach ( $terms as $term ) {
-//                wp_insert_term( $term, 'sapphire_todo_status' );
-//            }
+        $terms = [ "In Progress", "Dependency", "Completed" ];
+
+        foreach ( $terms as $term ) {
+            wp_insert_term( $term, 'sapphire_todo_status' );
+        }
 
 
         $todo_priority_labels = array(
@@ -313,22 +315,22 @@ class Sapphire_Site_Manager_Admin {
             'hierarchical'      => true,
             'public'            => false,
             'show_ui'           => true,
-            'show_admin_column' => false,
+            'show_admin_column' => true,
             'show_in_nav_menus' => false,
             'query_var'         => true,
             'show_in_rest'      => true,
-//                'default_term'      => array(
-//                    'name' => 'In Progress',
-//                    'slug' => 'in-progress',
-//                )
+//            'default_term'      => array(
+//                'name' => 'Low',
+//                'slug' => 'low',
+//            )
         );
         register_taxonomy( 'sapphire_todo_priority', array( 'sapphire_sm_todo' ), $todo_priority_args );
 
-//            $terms = [ "In Progress", "Not Started", "Completed", "Blocked", "Back Log" ];
-//
-//            foreach ( $terms as $term ) {
-//                wp_insert_term( $term, 'sapphire_todo_Priority' );
-//            }
+        $terms = [ "Low", "Medium", "High", "ASAP", "High" ];
+
+        foreach ( $terms as $term ) {
+            wp_insert_term( $term, 'sapphire_todo_priority' );
+        }
 
 
     }
