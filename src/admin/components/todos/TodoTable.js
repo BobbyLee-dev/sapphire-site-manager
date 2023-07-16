@@ -29,13 +29,23 @@ import Sheet from '@mui/joy/Sheet'
 import IconButton, { iconButtonClasses } from '@mui/joy/IconButton'
 import Typography from '@mui/joy/Typography'
 import Chip from '@mui/joy/Chip'
+import { ColorPaletteProp } from '@mui/joy/styles'
 
 // Icons
 import {
     ArrowLeft,
     ArrowRight,
-    Filter, PlusSquare,
+    Filter,
+    PlusSquare,
     Search,
+    Clock,
+    BarChart2,
+    Truck,
+    Shield,
+    Coffee,
+    Activity,
+    HelpCircle,
+    Check
 } from 'react-feather'
 
 function fetchTodos () {
@@ -203,11 +213,12 @@ export default function TodoTable () {
                 >
                     <Typography level="h1" fontSize="xl4">
 
-                        To-Dos: {data && (
-                        <>
-                            <span>Status - {statusOptions[statusParam] || 'Not Completed'}</span>
-                        </>
-                    )}
+                        To-Dos:
+                        {/*{data && (*/}
+                        {/*    <>*/}
+                        {/*        <span>Status - {statusOptions[statusParam] || 'Not Completed'}</span>*/}
+                        {/*    </>*/}
+                        {/*)}*/}
                     </Typography>
                     <Box sx={{ flex: 999 }}/>
                     <Box
@@ -433,36 +444,54 @@ export default function TodoTable () {
                                     </td>
                                     <td>
                                         <Chip
-                                            variant="soft"
+                                            variant="outlined"
                                             size="sm"
-                                            // startDecorator={
-                                            // 	{
-                                            // 		Completed: (
-                                            // 			<Check className="feather" />
-                                            // 		),
-                                            // 		'In Progress': (
-                                            // 			<Activity className="feather" />
-                                            // 		),
-                                            // 		'Not Started': (
-                                            // 			<BarChart2 className="feather" />
-                                            // 		),
-                                            // 	}[row.status]
-                                            // }
-                                            // color={
-                                            // 	{
-                                            // 		Completed: 'success',
-                                            // 		'In Progress': 'info',
-                                            // 		'Not Started': 'neutral',
-                                            // 	}[row.status] as ColorPaletteProp
-                                            // }
+                                            startDecorator={
+                                                {
+                                                    Completed: <Check className="feather"/>,
+                                                    'In Progress': <Activity className={`feather`}/>,
+                                                    Dependency: <HelpCircle className={`feather`}/>,
+                                                    ASAP: <Clock className={`feather`}/>,
+                                                    'Not Started': <Coffee className={`feather`}/>
+                                                }[todo.status_name]
+                                            }
+                                            color={
+                                                {
+                                                    Completed: 'primary',
+                                                    'In Progress': 'success',
+                                                    Dependency: 'info',
+
+                                                    High: 'danger',
+                                                    ASAP: 'info',
+                                                    'Not Started': 'neutral'
+                                                }[todo.status_name]
+                                            }
                                         >
                                             {todo.status_name}
                                         </Chip>
                                     </td>
                                     <td>
                                         <Chip
-                                            variant="soft"
+                                            variant="solid"
                                             size="sm"
+                                            startDecorator={
+                                                {
+                                                    Low: <Truck className="feather"/>,
+                                                    Medium: <Shield className={`feather`}/>,
+                                                    High: <BarChart2 className={`feather`}/>,
+                                                    ASAP: <Clock className={`feather`}/>,
+                                                    'Not Set': <Coffee className={`feather`}/>
+                                                }[todo.priority_name]
+                                            }
+                                            color={
+                                                {
+                                                    Low: 'success',
+                                                    Medium: 'warning',
+                                                    High: 'danger',
+                                                    ASAP: 'info',
+                                                    'Not Set': 'neutral'
+                                                }[todo.priority_name]
+                                            }
                                         >
                                             {todo.priority_name}
                                         </Chip>
