@@ -1,5 +1,5 @@
 // WordPress
-import {render, useContext} from '@wordpress/element'
+import { render, useContext } from '@wordpress/element'
 
 // Router
 import {
@@ -14,10 +14,10 @@ import {
 } from 'react-router-dom'
 
 // React Query
-import {QueryClientProvider, QueryClient} from 'react-query'
+import { QueryClientProvider, QueryClient } from 'react-query'
 
 // JoyUI
-import {CssVarsProvider} from '@mui/joy/styles'
+import { CssVarsProvider } from '@mui/joy/styles'
 import GlobalStyles from '@mui/joy/GlobalStyles'
 import CssBaseline from '@mui/joy/CssBaseline'
 import Box from '@mui/joy/Box'
@@ -28,15 +28,15 @@ import Typography from '@mui/joy/Typography'
 // Local Components
 import './main.scss'
 import '../assets/feather.min.js'
-import Todos from './components/todos/Todos'
+import TodoTable from './components/todos/TodoTable'
 import Todo from './components/todos/Todo'
 import Sidebar from './components/Sidebar'
 import customTheme from './components/theme'
-import NewTodo from "./components/todos/NewTodo";
+import NewTodo from './components/todos/NewTodo'
 
 const queryClient = new QueryClient()
 
-export default function Main() {
+export default function Main () {
     return (
         <CssVarsProvider disableTransitionOnChange theme={customTheme}>
             <GlobalStyles
@@ -95,7 +95,7 @@ export default function Main() {
                                 <Route
                                     exact
                                     path={'/todos'}
-                                    element={<Todos/>}
+                                    element={<TodoTable/>}
                                 />
                                 <Route
                                     exact
