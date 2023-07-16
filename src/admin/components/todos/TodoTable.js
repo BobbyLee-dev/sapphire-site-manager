@@ -9,6 +9,9 @@ import { Link, useNavigate, useSearchParams, useParams } from 'react-router-dom'
 // TanStack React Query
 import { useQuery, useQueryClient } from 'react-query'
 
+// Fuse.js fuzzy search
+import Fuse from 'fuse.js'
+
 // JoyUI
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
@@ -55,10 +58,11 @@ function fetchTodos () {
 
 }
 
-export default function OrderTable () {
+export default function TodoTable () {
     const parentRef = React.useRef()
     let [searchParams, setSearchParams] = useSearchParams()
     let statusParam = searchParams.get('status')
+    let todoSearchParam = searchParams.get('search')
     let priorityParam = searchParams.get('priority')
     const [open,] = useState(false)
     const queryClient = useQueryClient()
@@ -66,12 +70,18 @@ export default function OrderTable () {
     let todoCount = 0
     const statusOptions = {}
     const priorityOptions = {}
-
     const [todoStatus, setTodoStatus] = useState(statusParam || 'not-completed')
     const [todoStatusName, setTodoStatusName] = useState('Not Completed')
     const [todoPriority, setTodoPriority] = useState(priorityParam || 'all')
     const [todoPriorityName, setTodoPriorityName] = useState('All')
-
+    const [todoSearch, setTodoSearch] = useState('')
+    let todos = []
+    const [searchValue, setSearchValue] = useState('')
+    const searchOptions = {
+        findAllMatches: true,
+        keys: ['post_content', 'post_title'],
+        threshold: 0.3,
+    }
     const { status, data, error, isFetching, isPreviousData } = useQuery({
         queryKey: ['todos'],
         queryFn: () => fetchTodos(),
@@ -79,18 +89,17 @@ export default function OrderTable () {
         staleTime: 5000,
     })
 
-    let todos = []
-
     // Filters
     if (data) {
 
         todos = data.all_todos
+
         // Default show not completed
         if (statusParam === null || statusParam === 'not-completed') {
             todos = todos.filter(todo => todo.status !== 'completed')
         }
 
-        // Show status selected
+        // Filter by Status
         if (statusParam !== null && statusParam !== 'not-completed') {
             todos = todos.filter(todo => {
                 if (statusParam === 'all') {
@@ -104,11 +113,17 @@ export default function OrderTable () {
 
         // Filter by Priority
         if (priorityParam !== null && priorityParam !== 'all') {
-            console.log(priorityParam)
             todos = todos.filter(todo => {
-                // console.log(todo)
                 return todo.priority === priorityParam
             })
+        }
+
+        // Filter by Search
+        if (todoSearchParam !== null) {
+            const fuse = new Fuse(todos, searchOptions)
+            if (todos.length) {
+                todos = fuse.search(todoSearchParam)
+            }
         }
 
         // Build Status options
@@ -126,6 +141,18 @@ export default function OrderTable () {
         })
 
         todoCount = todos.length
+
+    }
+
+    function updateTodoSearchParam (e) {
+        console.log(e.target.value)
+        if (e.target.value) {
+            searchParams.set('search', e.target.value)
+            setSearchParams(searchParams)
+        } else {
+            searchParams.delete('search')
+            setSearchParams(searchParams)
+        }
 
     }
 
@@ -164,13 +191,14 @@ export default function OrderTable () {
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        my: 0,
-                        gap: 1,
+                        justifyContent: 'space-between',
+                        mb: 2,
+                        gap: 2,
                         flexWrap: 'wrap',
-                        '& > *': {
-                            minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
-                            flexGrow: 1,
-                        },
+                        // '& > *': {
+                        //     minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
+                        //     flexGrow: 1,
+                        // },
                     }}
                 >
                     <Typography level="h1" fontSize="xl4">
@@ -283,16 +311,18 @@ export default function OrderTable () {
                         },
                     }}
                 >
-                    <FormControl sx={{ flex: 1 }} size="sm">
-                        <FormLabel>Search for To-do</FormLabel>
-                        <Input
-                            placeholder="Search"
-                            startDecorator={<Search className="feather"/>}
-                        />
-                    </FormControl>
-
                     {data && (
                         <>
+                            <FormControl sx={{ flex: 1 }} size="sm">
+                                <FormLabel>Search for To-do</FormLabel>
+                                <Input
+                                    placeholder="Search"
+                                    startDecorator={<Search className="feather"/>}
+                                    onChange={(e) => updateTodoSearchParam(e)}
+                                />
+                            </FormControl>
+
+
                             <FormControl size="sm">
                                 <FormLabel>Status</FormLabel>
                                 <Select
@@ -379,10 +409,10 @@ export default function OrderTable () {
                         <tbody>
                         {todos &&
                             todos.map((todo) => (
-                                <tr key={todo.ID}>
+                                <tr key={todo.ID || todo.item.ID}>
                                     <td style={{ padding: 0 }}>
                                         <Link
-                                            to={`/todos/${todo.ID}`}
+                                            to={`/todos/${todo.ID || todo.item.ID}`}
                                             // to={'/'}
                                             state={todo}
                                             style={{
@@ -397,7 +427,7 @@ export default function OrderTable () {
                                                 level="body2"
                                                 textColor="text.primary"
                                             >
-                                                {todo.post_title}
+                                                {todo.post_title || todo.item.post_title}
                                             </Typography>
                                         </Link>
                                     </td>

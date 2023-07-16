@@ -115,9 +115,6 @@ export default function Sidebar () {
                                     <UserCheck className="feather"/>
                                 </ListItemDecorator>
                                 <ListItemContent>Todos</ListItemContent>
-                                <Chip variant="soft" size="sm">
-                                    10
-                                </Chip>
                             </ListItemButton>
                         </Link>
                     </ListItem>

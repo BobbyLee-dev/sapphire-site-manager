@@ -13,6 +13,22 @@
     #wpbody-content {
         padding-bottom: 0;
     }
+
+    .single-todo {
+        max-width: 100%;
+        overflow: hidden;
+        font-size: 18px;
+
+        p {
+            font-size: 16px;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+
+    }
 }
 
 
@@ -44,12 +60,11 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: red;
     }
 }
 
 .edit-sapphire-todo {
-    opacity: 0;
+    display: none;
 
     &.--show-todo-edit {
         opacity: 1;
@@ -59,27 +74,37 @@
         top: 0;
         right: 0;
         z-index: 99999999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         iframe {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: lavender;
             top: 0;
             right: 0;
+            display: block;
+        }
+
+        .add-todo-back-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+            height: 61px;
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
     }
 
-    .add-todo-back-btn {
-        position: absolute;
-        top: 0;
-        left: 0;
-        z-index: 5;
-        height: 61px;
-        width: 60px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: red;
-    }
+    //.add-todo-back-btn {
+    //    display: none;
+    //}
+    //
+    //iframe {
+    //    display: none;
+    //}
 }

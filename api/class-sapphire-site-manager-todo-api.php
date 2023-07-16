@@ -68,6 +68,7 @@ class Sapphire_Site_Manager_Rest_Api {
             'callback'            => array( __CLASS__, 'get_todo' ),
             'permission_callback' => '__return_true',
         ) );
+
     }
 
     /**
@@ -81,6 +82,7 @@ class Sapphire_Site_Manager_Rest_Api {
         $args = array(
             'post_type'      => 'sapphire_sm_todo',
             'posts_per_page' => - 1,
+            'order'          => 'ASC',
             'post_status'    => array(
                 'publish',
                 'pending',
@@ -89,7 +91,7 @@ class Sapphire_Site_Manager_Rest_Api {
 //                'future',
                 'private',
                 'inherit',
-                'trash'
+//                'trash'
             )
         );
 
@@ -123,7 +125,7 @@ class Sapphire_Site_Manager_Rest_Api {
     }
 
     /**
-     * Get all single todo
+     * Get single todo
      *
      * @return To-do post
      * @since 1.0.
@@ -132,7 +134,19 @@ class Sapphire_Site_Manager_Rest_Api {
     public static function get_todo( $request ) {
         $post_id = $request[ 'id' ];
         if ( ! empty( $post_id ) ) {
-            return get_post( $post_id );
+            $todo = get_post( $post_id );
+//            $todo_blocks          = parse_blocks( $todo->post_content );
+//            $todo_blocks_rendered = '';
+//            foreach ( $todo_blocks as $block ) {
+//                $todo_blocks_rendered .= render_block( $block );
+//            }
+//
+//            $todo->rendered_contnet = $todo_blocks_rendered;
+//            $todo->styles           = wp_get_global_stylesheet();
+//            $todo->styles_custom    = wp_get_global_styles_custom_css();
+
+
+            return $todo;
         } else {
             return "Post not found";
         }

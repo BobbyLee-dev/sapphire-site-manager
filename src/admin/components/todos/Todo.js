@@ -1,29 +1,34 @@
 // WordPress
-import {memo, useState} from '@wordpress/element'
+import { memo, useState } from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
 
 // Router
-import {useLocation, Link, useParams} from 'react-router-dom'
+import { useLocation, Link, useParams, useNavigate } from 'react-router-dom'
 
 // React Query
-import {useQuery} from 'react-query'
+import { useQuery } from 'react-query'
 
 // JoyUI
-import {Typography} from '@mui/joy'
-import Box from "@mui/joy/Box";
-import Button from "@mui/joy/Button";
-import {PlusSquare} from "react-feather";
-import Select from '@mui/joy/Select';
-import Option from '@mui/joy/Option';
+import { Typography } from '@mui/joy'
+import Box from '@mui/joy/Box'
+import Button from '@mui/joy/Button'
+import { PlusSquare, ArrowLeftCircle, ArrowLeft, UserCheck } from 'react-feather'
+import Select from '@mui/joy/Select'
+import Option from '@mui/joy/Option'
 
 // Lodash
-import {isEmpty} from "lodash";
+import { isEmpty } from 'lodash'
+import { addQueryArgs } from '@wordpress/url'
+import ListItemButton from '@mui/joy/ListItemButton'
+import ListItemDecorator from '@mui/joy/ListItemDecorator'
+import ListItemContent from '@mui/joy/ListItemContent'
+import Chip from '@mui/joy/Chip'
 
-const EditToDoIframe = memo(({src}) => (
+const EditToDoIframe = memo(({ src }) => (
     <iframe src={src}/>
-));
+))
 
-function fetchTodoById({queryKey}) {
+function fetchTodoById ({ queryKey }) {
     // Get todo ID from the query key
     const todoId = queryKey[1]
     const fetchTodo = async (todoId) => {
@@ -45,8 +50,9 @@ function fetchTodoById({queryKey}) {
     return fetchTodo(todoId)
 }
 
-export default function Todo(props) {
+export default function Todo (props) {
     let todoData = {}
+    const navigate = useNavigate()
     const passedDownData = useLocation()
     const urlParams = useParams()
     const todoQueryResult = useQuery(['todos', urlParams.todoId], fetchTodoById)
@@ -68,16 +74,15 @@ export default function Todo(props) {
         )
     }
 
-    function toggleTodoEdit() {
+    function toggleTodoEdit () {
         setShowTodoEdit('--show-todo-edit')
 
     }
 
-    function hideTodoEdit() {
+    function hideTodoEdit () {
         setShowTodoEdit('--hide-todo-edit')
 
     }
-
 
     if (isEmpty(todoData)) {
         return (
@@ -86,64 +91,91 @@ export default function Todo(props) {
             </div>
         )
     } else {
+        console.log(passedDownData)
         return (
-            <>
-                <Select defaultValue="dog">
-                    <Option value="dog">Dog</Option>
-                    <Option value="cat">Cat</Option>
-                </Select>
+            <div className={`single-todo`}>
                 <Box
                     sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        my: 0,
-                        gap: 1,
+                        justifyContent: 'space-between',
+                        mb: 2,
+                        gap: 2,
                         flexWrap: 'wrap',
-                        '& > *': {
-                            minWidth: 'clamp(0px, (500px - 100%) * 999, 100%)',
-                            flexGrow: 1,
-                        },
                     }}
                 >
+                    {passedDownData.state ? (
+                            <Button startDecorator={<ArrowLeft/>} onClick={() => navigate(-1)}>Back</Button>
+                        ) :
+                        <Link
+                            to="/todos"
+                            style={{
+                                textDecoration: 'none',
+                                color: '#fff'
+                            }}
+                        >
+                            <Button startDecorator={<ArrowLeft/>}>
+
+                                Todos
+                            </Button>
+                        </Link>
+
+                    }
+
+
+                    <Button
+                        color="primary"
+                        variant="soft"
+                        underline="none"
+                        endDecorator={<PlusSquare className="feather"/>}
+                        onClick={toggleTodoEdit}
+                    >
+                        Edit To-Do
+                    </Button>
+                </Box>
+                <Box>
                     <Typography level="h1" fontSize="xl4">
                         <div>{todoData.post_title}</div>
                     </Typography>
-                    <Box sx={{flex: 999}}/>
+                    <Box sx={{ flex: 999 }}/>
                     <Box
                         sx={{
                             display: 'flex',
                             gap: 1,
-                            '& > *': {flexGrow: 1},
+                            '& > *': { flexGrow: 1 },
                         }}
                     >
-
-                        <Button
-                            color="primary"
-                            variant="soft"
-                            underline="none"
-                            endDecorator={<PlusSquare className="feather"/>}
-                            onClick={toggleTodoEdit}
-                        >
-                            Edit To-Do
-                        </Button>
                     </Box>
                 </Box>
+                <Box>
+                    <style>{todoData.styles}</style>
+                    <style>{todoData.styles_custom}</style>
+                    <div dangerouslySetInnerHTML={{
+                        __html: todoData.post_content
+                    }}/>
+                </Box>
 
-                <div className={`edit-sapphire-todo ${showTodoEdit}`}>
+                <Box className={`edit-sapphire-todo ${showTodoEdit}`}>
+                    <Box>
+                        <Typography>Loading...</Typography>
+                    </Box>
                     <EditToDoIframe
                         src={`${window.location.origin}/wp-admin/post.php?post=${todoData.ID}&action=edit`}/>
                     <Button
                         className={`add-todo-back-btn`}
                         color="primary"
-                        variant="soft"
+                        variant="solid"
                         underline="none"
                         onClick={hideTodoEdit}
+                        sx={{
+                            borderRadius: 0
+                        }}
                     >
                         Back
                     </Button>
-                </div>
+                </Box>
 
-            </>
+            </div>
         )
     }
 
