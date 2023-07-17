@@ -45,7 +45,10 @@ import {
     Coffee,
     Activity,
     HelpCircle,
-    Check
+    Check,
+    CornerLeftDown,
+    ChevronsRight,
+    Feather
 } from 'react-feather'
 
 function fetchTodos () {
@@ -429,7 +432,7 @@ export default function TodoTable () {
                                             style={{
                                                 textDecoration: 'none',
                                                 display: 'block',
-                                                width: '100%',
+                                                flex: '1',
                                                 padding: '12px 20px',
                                             }}
                                         >
@@ -442,7 +445,11 @@ export default function TodoTable () {
                                             </Typography>
                                         </Link>
                                     </td>
-                                    <td>
+                                    <td
+                                        style={{
+                                            minWidth: '160px'
+                                        }}
+                                    >
                                         <Chip
                                             variant="outlined"
                                             size="sm"
@@ -451,8 +458,7 @@ export default function TodoTable () {
                                                     Completed: <Check className="feather"/>,
                                                     'In Progress': <Activity className={`feather`}/>,
                                                     Dependency: <HelpCircle className={`feather`}/>,
-                                                    ASAP: <Clock className={`feather`}/>,
-                                                    'Not Started': <Coffee className={`feather`}/>
+                                                    'Not Started': <Feather className={`feather`}/>
                                                 }[todo.status_name]
                                             }
                                             color={
@@ -460,9 +466,6 @@ export default function TodoTable () {
                                                     Completed: 'primary',
                                                     'In Progress': 'success',
                                                     Dependency: 'info',
-
-                                                    High: 'danger',
-                                                    ASAP: 'info',
                                                     'Not Started': 'neutral'
                                                 }[todo.status_name]
                                             }
