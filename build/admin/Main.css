@@ -1,1 +1,89 @@
-.toplevel_page_sapphire-site-manager #wpcontent{padding-left:0!important;position:relative}.toplevel_page_sapphire-site-manager #wpfooter{display:none}.toplevel_page_sapphire-site-manager #wpbody-content{padding-bottom:0}.toplevel_page_sapphire-site-manager .single-todo{font-size:18px;max-width:100%;overflow:hidden}.toplevel_page_sapphire-site-manager .single-todo p{font-size:16px}.toplevel_page_sapphire-site-manager .single-todo img{max-width:100%}.add-sapphire-todo-container{height:100%;position:fixed;right:0;top:0;width:100%;z-index:99999999}.add-sapphire-todo-container iframe{height:100%;position:absolute;right:0;top:0;width:100%}.add-sapphire-todo-container .add-todo-back-btn{align-items:center;display:flex;height:61px;justify-content:center;left:0;position:absolute;top:0;width:60px;z-index:5}.edit-sapphire-todo{display:none}.edit-sapphire-todo.--show-todo-edit{align-items:center;background:#fff;display:flex;height:100%;justify-content:center;opacity:1;position:fixed;right:0;top:0;width:100%;z-index:99999999}.edit-sapphire-todo.--show-todo-edit iframe{display:block;height:100%;position:absolute;right:0;top:0;width:100%}.edit-sapphire-todo.--show-todo-edit .add-todo-back-btn{align-items:center;display:flex;height:61px;justify-content:center;left:0;position:absolute;top:0;width:60px;z-index:5}
+/*!********************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[4].use[1]!./node_modules/postcss-loader/dist/cjs.js??ruleSet[1].rules[4].use[2]!./node_modules/sass-loader/dist/cjs.js??ruleSet[1].rules[4].use[3]!./src/admin/main.scss ***!
+  \********************************************************************************************************************************************************************************************************************************************/
+.toplevel_page_sapphire-site-manager #wpcontent {
+  padding-left: 0 !important;
+  position: relative;
+}
+.toplevel_page_sapphire-site-manager #wpfooter {
+  display: none;
+}
+.toplevel_page_sapphire-site-manager #wpbody-content {
+  padding-bottom: 0;
+}
+.toplevel_page_sapphire-site-manager .single-todo {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 18px;
+}
+.toplevel_page_sapphire-site-manager .single-todo p {
+  font-size: 16px;
+}
+.toplevel_page_sapphire-site-manager .single-todo img {
+  max-width: 100%;
+}
+
+.add-sapphire-todo-container {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  z-index: 99999999;
+}
+.add-sapphire-todo-container iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+}
+.add-sapphire-todo-container .add-todo-back-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  height: 61px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-sapphire-todo {
+  display: none;
+}
+.edit-sapphire-todo.--show-todo-edit {
+  opacity: 1;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  z-index: 99999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+}
+.edit-sapphire-todo.--show-todo-edit iframe {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  right: 0;
+  display: block;
+}
+.edit-sapphire-todo.--show-todo-edit .add-todo-back-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  height: 61px;
+  width: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*# sourceMappingURL=Main.css.map*/

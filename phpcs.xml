@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<ruleset name="Coding Standards">
+	<description>Sapphire Site Manager Coding Standards</description>
+
+	<!--Include all-->
+	<file>.</file>
+
+	<!--Exclude-->
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern type="relative">assets/build/*</exclude-pattern>
+	<exclude-pattern type="relative">languages/*</exclude-pattern>
+	<exclude-pattern type="relative">src/*</exclude-pattern>
+
+	<!--Command line args-->
+	<arg value="ps"/>
+	<arg name="extensions" value="php"/>
+	<arg name="colors"/>
+	<arg name="parallel" value="20"/>
+
+	<!--PHP version.-->
+	<config name="testVersion" value="8.0-"/>
+
+	<!--Rules-->
+	<rule ref="PHPCompatibility"/>
+
+	<rule ref="WordPress">
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+		<exclude name="Squiz.Commenting.FileComment.Missing"/>
+		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
+
+		<!-- PSR4 -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+	</rule>
+
+	<rule ref="WordPress-Extra"/>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="sapphire-site-manager"/>
+				<element value="default"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress-Core">
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
+		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
+		<exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
+		<exclude name="Squiz.Commenting.FileComment.SpacingAfterComment"/>
+	</rule>
+</ruleset>

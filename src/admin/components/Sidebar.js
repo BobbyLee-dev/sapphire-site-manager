@@ -16,6 +16,7 @@ import Typography from '@mui/joy/Typography'
 
 // Icons
 import {
+    BarChart2,
     BookOpen,
     HelpCircle,
     Home,
@@ -157,6 +158,27 @@ export default function Sidebar () {
                                     <BookOpen className="feather"/>
                                 </ListItemDecorator>
                                 <ListItemContent>Documentation</ListItemContent>
+                            </ListItemButton>
+                        </Link>
+                    </ListItem>
+                    <ListItem>
+                        <Link
+                            to="/theme-options"
+                            style={{
+                                textDecoration: 'none',
+                                display: 'block',
+                                width: '100%',
+                            }}
+                        >
+                            <ListItemButton
+                                sx={{
+                                    my: 0,
+                                }}
+                            >
+                                <ListItemDecorator>
+                                    <BarChart2 className="feather"/>
+                                </ListItemDecorator>
+                                <ListItemContent>Theme Options</ListItemContent>
                             </ListItemButton>
                         </Link>
                     </ListItem>

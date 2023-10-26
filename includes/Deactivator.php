@@ -1,9 +1,12 @@
 <?php
+declare( strict_types=1 );
+
+namespace SapphireSiteManager;
 
 /**
  * Fired during plugin deactivation
  *
- * @link       https://wp.bobbylee.com
+ * @link       https://sapphiresitemanager.com
  * @since      1.0.0
  *
  * @package    Sapphire_Site_Manager
@@ -20,7 +23,7 @@
  * @subpackage Sapphire_Site_Manager/includes
  * @author     Bobby Lee <bobbylee.dev@gmail.com>
  */
-class Sapphire_Site_Manager_Deactivator {
+class Deactivator {
 
 	/**
 	 * Short Description. (use period)
@@ -30,7 +33,5 @@ class Sapphire_Site_Manager_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
 	}
-
 }

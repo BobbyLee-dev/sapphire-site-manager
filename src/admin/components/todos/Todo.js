@@ -91,7 +91,7 @@ export default function Todo (props) {
             </div>
         )
     } else {
-        console.log(passedDownData)
+        console.log(todoData)
         return (
             <div className={`single-todo`}>
                 <Box
