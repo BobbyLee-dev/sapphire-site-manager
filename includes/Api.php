@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager;
 
-use To;
 use WP_Query;
 
 /**
@@ -54,7 +53,7 @@ class Api {
 	 * @since    1.0.0
 	 * @uses    register_rest_route()
 	 */
-	public static function ssm_todo_routes() {
+	public static function ssm_todo_routes(): void {
 		// all todos
 		// wp-json/sapphire-site-manager/v1/todos.
 		register_rest_route(
