@@ -52,5 +52,6 @@
 		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
 		<exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
 		<exclude name="Squiz.Commenting.FileComment.SpacingAfterComment"/>
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
 </ruleset>

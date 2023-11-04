@@ -24,18 +24,18 @@ declare( strict_types=1 );
  * **********************************************************************
  */
 
-use SapphireSiteManager\SapphireSiteManager;
+use SapphireSiteManager\Main;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-define( 'SAPPHIRE_SITE_MANAGER_VERSION', '1.0.0' );
+const SAPPHIRE_SITE_MANAGER_NAME        = 'sapphire-site-manager';
+const SAPPHIRE_SITE_MANAGER_VERSION     = '1.0.0';
+const SAPPHIRE_SITE_MANAGER_PHP_VERSION = '8.0';
 define( 'SAPPHIRE_SITE_MANAGER_URL', plugin_dir_url( __FILE__ ) );
 define( 'SAPPHIRE_SITE_MANAGER_PATH', plugin_dir_path( __FILE__ ) );
-define( 'SAPPHIRE_SITE_MANAGER_PHP_VERSION', '8.0' );
 
 require __DIR__ . '/vendor/autoload.php';
 
-$sapphire_site_manager_init = new SapphireSiteManager();
-$sapphire_site_manager_init->run();
+new Main();

@@ -1,32 +1,32 @@
 {
-    "name": "sapphire/sapphire-site-manager",
-    "type": "wordpress-plugin",
-    "authors": [
-        {
-            "name": "bobbylee.dev",
-            "email": "bobby@bobbylee.dev"
-        }
-    ],
-    "require": {
-        "php": "^8.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "SapphireSiteManager\\": "includes/"
-        }
-    },
-    "require-dev": {
-        "phpcompatibility/phpcompatibility-wp": "^2.1",
-        "wp-coding-standards/wpcs": "^3.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
-    },
-    "config": {
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true
-        }
-    },
-    "scripts": {
-        "lint": "phpcs --standard=phpcs.xml",
-        "fix": "phpcbf --standard=phpcs.xml"
-    }
+	"name": "sapphire/sapphire-site-manager",
+	"type": "wordpress-plugin",
+	"authors": [
+		{
+			"name": "bobbylee.dev",
+			"email": "bobby@bobbylee.dev"
+		}
+	],
+	"require": {
+		"php": "^8.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"SapphireSiteManager\\": "classes"
+		}
+	},
+	"require-dev": {
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"wp-coding-standards/wpcs": "^3.0",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"lint": "phpcs --standard=phpcs.xml",
+		"fix": "phpcbf --standard=phpcs.xml"
+	}
 }

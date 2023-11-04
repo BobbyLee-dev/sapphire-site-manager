@@ -1,37 +1,37 @@
 {
-    "name": "sapphire-site-manager",
-    "version": "1.0.0",
-    "description": "WordPress site manager for tasks, project, documentation and more.",
-    "author": "bobbylee_dev",
-    "license": "GPL-2.0-or-later",
-    "main": "build/index.js",
-    "scripts": {
-        "build": "wp-scripts build src/admin/Main.js --output-path=build/admin",
-        "format": "wp-scripts format",
-        "lint:css": "wp-scripts lint-style",
-        "lint:js": "wp-scripts lint-js",
-        "start": "wp-scripts start src/admin/Main.js --output-path=build/admin",
-        "packages-update": "wp-scripts packages-update",
-        "lint:php": "vendor/bin/phpcs",
-        "lint:php:fix": "vendor/bin/phpcbf"
-    },
-    "devDependencies": {
-        "@wordpress/prettier-config": "^2.2.0",
-        "@wordpress/scripts": "26.5.0"
-    },
-    "prettier": "@wordpress/prettier-config",
-    "dependencies": {
-        "@emotion/react": "11.11.0",
-        "@emotion/styled": "11.11.0",
-        "@mui/joy": "5.0.0-alpha.80",
-        "@wordpress/api-fetch": "6.31.0",
-        "@wordpress/components": "24.0.0",
-        "@wordpress/element": "5.10.0",
-        "@wordpress/url": "3.34.0",
-        "feather-icons": "4.29.0",
-        "lodash": "4.17.21",
-        "react-feather": "2.0.10",
-        "react-query": "3.39.3",
-        "react-router-dom": "^6.11.2"
-    }
+	"name": "sapphire-site-manager",
+	"version": "1.0.0",
+	"description": "WordPress site manager for tasks, project, documentation and more.",
+	"author": "bobbylee_dev",
+	"license": "GPL-2.0-or-later",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "wp-scripts build src/adminFacing/Main.js --output-path=build/adminFacing",
+		"format": "wp-scripts format",
+		"lint:css": "wp-scripts lint-style",
+		"lint:js": "wp-scripts lint-js",
+		"start": "wp-scripts start src/adminFacing/Main.js --output-path=build/adminFacing",
+		"packages-update": "wp-scripts packages-update",
+		"lint:php": "vendor/bin/phpcs",
+		"lint:php:fix": "vendor/bin/phpcbf"
+	},
+	"devDependencies": {
+		"@wordpress/prettier-config": "^2.2.0",
+		"@wordpress/scripts": "26.5.0"
+	},
+	"prettier": "@wordpress/prettier-config",
+	"dependencies": {
+		"@emotion/react": "11.11.0",
+		"@emotion/styled": "11.11.0",
+		"@mui/joy": "5.0.0-alpha.80",
+		"@wordpress/api-fetch": "6.31.0",
+		"@wordpress/components": "24.0.0",
+		"@wordpress/element": "5.10.0",
+		"@wordpress/url": "3.34.0",
+		"feather-icons": "4.29.0",
+		"lodash": "4.17.21",
+		"react-feather": "2.0.10",
+		"react-query": "3.39.3",
+		"react-router-dom": "^6.11.2"
+	}
 }
