@@ -7,7 +7,7 @@
 
 	<!--Exclude-->
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>/vendor/*</exclude-pattern>
 	<exclude-pattern type="relative">assets/build/*</exclude-pattern>
 	<exclude-pattern type="relative">languages/*</exclude-pattern>
 	<exclude-pattern type="relative">src/*</exclude-pattern>
@@ -19,10 +19,10 @@
 	<arg name="parallel" value="20"/>
 
 	<!--PHP version.-->
-	<config name="testVersion" value="8.0-"/>
-
-	<!--Rules-->
-	<rule ref="PHPCompatibility"/>
+	<config name="testVersion" value="7.4-"/>
+	<rule ref="PHPCompatibilityWP">
+		<include-pattern>*\.php</include-pattern>
+	</rule>
 
 	<rule ref="WordPress">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
@@ -48,10 +48,10 @@
 
 	<rule ref="WordPress-Core">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
 		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
 		<exclude name="PSR12.Files.FileHeader.IncorrectOrder"/>
 		<exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
 		<exclude name="Squiz.Commenting.FileComment.SpacingAfterComment"/>
-		<exclude name="Universal.Arrays.DisallowShortArraySyntax.Found"/>
 	</rule>
 </ruleset>

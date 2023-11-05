@@ -1,16 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\CPTs\CTPs;
+namespace SapphireSiteManager\CPT\CPTs;
 
-use SapphireSiteManager\CPTs\CPTInterface;
+use SapphireSiteManager\CPT\CPTInterface;
 
 /**
  * Register custom post types for Todos.
- *
- * Does not create front end pages.
- *
- * @since  1.0.0
+ * Does not create front end pages and is excluded
+ * from the sitemap
  */
 class ToDo implements CPTInterface {
 	/**
@@ -28,7 +26,7 @@ class ToDo implements CPTInterface {
 			'description'         => esc_html__( 'Sapphire To-dos - To-dos', 'sapphire-site-manager' ),
 			'public'              => true,
 			'exclude_from_search' => true,
-			'publicly_queryable'  => false,
+			'publicly_queryable'  => false, // remove from sitemap.
 			'show_in_menu'        => 'sapphire-todos-settings',
 			'show_in_nav_menus'   => false,
 			'supports'            => array(

@@ -16,10 +16,12 @@
 		}
 	},
 	"require-dev": {
-		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"phpcompatibility/php-compatibility": "*",
+		"phpcompatibility/phpcompatibility-wp": "*",
 		"wp-coding-standards/wpcs": "^3.0",
-		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.7"
 	},
+	"prefer-stable": true,
 	"config": {
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true

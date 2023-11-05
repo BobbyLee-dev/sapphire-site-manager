@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\Taxonomies\Taxonomies;
+namespace SapphireSiteManager\Taxonomy\Taxonomies;
 
 /**
  * Register custom Taxonomy Status for Todos.
  *
  * @since  1.0.0
  */
-class Status implements \SapphireSiteManager\Taxonomies\TaxonomyInterface {
+class Status implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
 
 	/**
 	 * @inheritDoc

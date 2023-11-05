@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\Taxonomies\Taxonomies;
+namespace SapphireSiteManager\Taxonomy\Taxonomies;
 
 /**
  * Register custom Taxonomy Priority for Todos.
  *
  * @since  1.0.0
  */
-class Priority implements \SapphireSiteManager\Taxonomies\TaxonomyInterface {
+class Priority implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
 
 	/**
 	 * @inheritDoc

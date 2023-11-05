@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\CPTs;
+namespace SapphireSiteManager\CPT;
 
 interface CPTInterface {
 	/**
@@ -12,7 +12,7 @@ interface CPTInterface {
 	public function slug(): string;
 
 	/**
-	 * Optional: register_post_type $args
+	 * Register_post_type $args
 	 *
 	 * @see https://developer.wordpress.org/reference/functions/register_post_type/
 	 *
@@ -21,7 +21,7 @@ interface CPTInterface {
 	public function args(): array;
 
 	/**
-	 * Optional: register_post_type $args['labels']. If empty, will use name().
+	 * Register_post_type $args['labels'].
 	 *
 	 * @return array
 	 */

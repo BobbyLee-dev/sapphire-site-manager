@@ -3,8 +3,8 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\APIs;
 
-use SapphireSiteManager\CPTs\CTPs\ToDo;
-use SapphireSiteManager\CPTs\RegisterCPT;
+use SapphireSiteManager\CPT\CPTs\ToDo;
+use SapphireSiteManager\CPT\RegisterCPTs;
 
 /**
  * The main Plugin class.

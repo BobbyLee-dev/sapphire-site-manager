@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\Taxonomies;
+namespace SapphireSiteManager\Taxonomy;
 
 /**
  * Creates Taxonomy and converts to radio box

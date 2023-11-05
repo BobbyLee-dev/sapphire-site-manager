@@ -1,7 +1,7 @@
 {
 	"name": "sapphire-site-manager",
 	"version": "1.0.0",
-	"description": "WordPress site manager for tasks, project, documentation and more.",
+	"description": "WordPress site manager for to-dos, projects, documentation and more.",
 	"author": "bobbylee_dev",
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",
@@ -13,7 +13,8 @@
 		"start": "wp-scripts start src/adminFacing/Main.js --output-path=build/adminFacing",
 		"packages-update": "wp-scripts packages-update",
 		"lint:php": "vendor/bin/phpcs",
-		"lint:php:fix": "vendor/bin/phpcbf"
+		"lint:php:fix": "vendor/bin/phpcbf",
+		"lint:php:version": "phpcs --standard=PHPCompatibility-WP --extensions=php"
 	},
 	"devDependencies": {
 		"@wordpress/prettier-config": "^2.2.0",
