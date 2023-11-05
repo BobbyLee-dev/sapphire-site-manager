@@ -7,7 +7,7 @@
 
 	<!--Exclude-->
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern type="relative">assets/build/*</exclude-pattern>
 	<exclude-pattern type="relative">languages/*</exclude-pattern>
 	<exclude-pattern type="relative">src/*</exclude-pattern>
@@ -19,10 +19,9 @@
 	<arg name="parallel" value="20"/>
 
 	<!--PHP version.-->
-	<config name="testVersion" value="7.4-"/>
-	<rule ref="PHPCompatibilityWP">
-		<include-pattern>*\.php</include-pattern>
-	</rule>
+	<config name="minimum_wp_version" value="6.0"/>
+	<config name="testVersion" value="8.2-"/>
+	<rule ref="PHPCompatibilityWP"/>
 
 	<rule ref="WordPress">
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
