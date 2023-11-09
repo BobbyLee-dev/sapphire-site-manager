@@ -38,4 +38,5 @@ define( 'SAPPHIRE_SITE_MANAGER_PATH', plugin_dir_path( __FILE__ ) );
 
 require __DIR__ . '/vendor/autoload.php';
 
-new Main();
+$main_plugin = new Main();
+$main_plugin->run();

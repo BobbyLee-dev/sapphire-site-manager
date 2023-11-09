@@ -3,15 +3,10 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\CPT;
 
-use SapphireSiteManager\Traits\PluginDirectoryPathTrait;
-use SapphireSiteManager\Traits\PluginDirectoryUrlTrait;
-
 /**
  * Register CPTs for the plugin
  */
 class RegisterCPTs {
-	use PluginDirectoryUrlTrait;
-	use PluginDirectoryPathTrait;
 
 	/**
 	 * Array for CPTs

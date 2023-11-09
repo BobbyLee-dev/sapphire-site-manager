@@ -12,22 +12,32 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"SapphireSiteManager\\": "classes"
+			"SapphireSiteManager\\": "./classes"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"SapphireSiteManager\\Tests\\": "./tests"
 		}
 	},
 	"require-dev": {
 		"phpcompatibility/phpcompatibility-wp": "*",
 		"wp-coding-standards/wpcs": "^3.0",
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.7"
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+		"dingo-d/wp-pest": "^1.6"
 	},
 	"prefer-stable": true,
 	"config": {
 		"allow-plugins": {
-			"dealerdirect/phpcodesniffer-composer-installer": true
+			"dealerdirect/phpcodesniffer-composer-installer": true,
+			"composer/installers": true,
+			"pestphp/pest-plugin": true
 		}
 	},
 	"scripts": {
 		"lint": "phpcs --standard=phpcs.xml",
-		"fix": "phpcbf --standard=phpcs.xml"
+		"fix": "phpcbf --standard=phpcs.xml",
+		"test:unit": "@php ./vendor/bin/pest --group=unit",
+		"test:integration": "@php ./vendor/bin/pest --group=integration"
 	}
 }

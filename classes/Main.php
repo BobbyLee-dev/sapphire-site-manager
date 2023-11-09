@@ -8,20 +8,20 @@ use SapphireSiteManager\PublicFacing\PublicFacing;
 use SapphireSiteManager\APIs\RegisterAPIs;
 use SapphireSiteManager\CPT\RegisterCPTs;
 use SapphireSiteManager\Taxonomy\RegisterTaxonomies;
-use SapphireSiteManager\Traits\PluginNameTrait;
-use SapphireSiteManager\Traits\PluginVersionTrait;
 
 /**
  * The main Plugin class.
  */
 class Main {
-	use PluginNameTrait;
-	use PluginVersionTrait;
 
 	/**
 	 * Define the core functionality of the plugin.
 	 */
 	public function __construct() {
+
+	}
+
+	public function run() {
 		$this->define_activation_hook();
 		$this->define_deactivation_hook();
 		new AdminFacing();
@@ -54,5 +54,13 @@ class Main {
 				Deactivator::deactivate();
 			}
 		);
+	}
+
+	public function say_hi() {
+		return 'hi bobby';
+	}
+
+	public function array_sum( array $items = [] ): int {
+		return array_sum( $items );
 	}
 }

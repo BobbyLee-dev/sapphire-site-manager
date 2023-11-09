@@ -15,13 +15,13 @@ class AdminMenu {
 	 * Initialize the class and set its properties.
 	 */
 	public function __construct() {
-		$this->create_menu_item();
+		$this->create_menu_page();
 	}
 
 	/**
 	 * Add AdminFacing Page/Menu item
 	 */
-	public function create_menu_item(): void {
+	public function create_menu_page(): void {
 		add_menu_page(
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
