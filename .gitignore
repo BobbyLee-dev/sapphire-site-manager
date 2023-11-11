@@ -5,3 +5,5 @@ node_modules
 vendor
 /wp-content
 /wp
+.phpunit.result.cache
+*.cache

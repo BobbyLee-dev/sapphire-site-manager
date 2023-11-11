@@ -38,6 +38,7 @@
 		"lint": "phpcs --standard=phpcs.xml",
 		"fix": "phpcbf --standard=phpcs.xml",
 		"test:unit": "@php ./vendor/bin/pest --group=unit",
-		"test:integration": "@php ./vendor/bin/pest --group=integration"
+		"test:integration": "@php ./vendor/bin/pest --group=integration",
+		"test:integration": "./vendor/bin/pest --group=unit && ./vendor/bin/pest --group=integration"
 	}
 }
