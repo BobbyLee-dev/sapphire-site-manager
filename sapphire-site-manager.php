@@ -24,7 +24,7 @@ declare( strict_types=1 );
  * **********************************************************************
  */
 
-use SapphireSiteManager\Main;
+use SapphireSiteManager\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -38,5 +38,5 @@ define( 'SAPPHIRE_SITE_MANAGER_PATH', plugin_dir_path( __FILE__ ) );
 
 require __DIR__ . '/vendor/autoload.php';
 
-$main_plugin = new Main();
+$main_plugin = new Plugin();
 $main_plugin->run();

@@ -4,31 +4,40 @@ declare( strict_types=1 );
 namespace SapphireSiteManager;
 
 use SapphireSiteManager\AdminFacing\AdminFacing;
-use SapphireSiteManager\PublicFacing\PublicFacing;
 use SapphireSiteManager\APIs\RegisterAPIs;
 use SapphireSiteManager\CPT\RegisterCPTs;
+use SapphireSiteManager\PublicFacing\PublicFacing;
 use SapphireSiteManager\Taxonomy\RegisterTaxonomies;
 
 /**
  * The main Plugin class.
  */
-class Main {
+class Plugin {
 
 	/**
-	 * Define the core functionality of the plugin.
+	 * Start and run the plugin.
 	 */
-	public function __construct() {
-
-	}
-
-	public function run() {
+	public function run(): void {
 		$this->define_activation_hook();
 		$this->define_deactivation_hook();
-		new AdminFacing();
+
+		// Admin.
+		$admin_facing = new AdminFacing();
+		$admin_facing->run();
+
+		// Public.
 		new PublicFacing();
+
+		// CPTs.
 		new RegisterCPTs();
+
+		// Taxonomies.
 		new RegisterTaxonomies();
+
+		// APIs.
 		new RegisterAPIs();
+
+		// I18n languages.
 		new I18n();
 	}
 
@@ -54,13 +63,5 @@ class Main {
 				Deactivator::deactivate();
 			}
 		);
-	}
-
-	public function say_hi() {
-		return 'hi bobby';
-	}
-
-	public function array_sum( array $items = [] ): int {
-		return array_sum( $items );
 	}
 }

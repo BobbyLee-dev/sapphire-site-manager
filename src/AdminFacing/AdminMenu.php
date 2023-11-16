@@ -12,16 +12,21 @@ class AdminMenu {
 	use PluginNameTrait;
 
 	/**
-	 * Initialize the class and set its properties.
+	 * Setup action to create the admin menu.
 	 */
-	public function __construct() {
-		$this->create_menu_page();
+	public function run(): void {
+		add_action(
+			'admin_menu',
+			function () {
+				$this->create_admin_pages();
+			}
+		);
 	}
 
 	/**
-	 * Add AdminFacing Page/Menu item
+	 * Add AdminFacing Page/Menu items.
 	 */
-	public function create_menu_page(): void {
+	public function create_admin_pages(): void {
 		add_menu_page(
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),

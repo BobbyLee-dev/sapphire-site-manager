@@ -8,22 +8,29 @@ namespace SapphireSiteManager\AdminFacing;
  */
 class AdminFacing {
 	/**
-	 * Initialize the class and set its properties.
+	 * Set up the adminFacing items.
 	 */
-	public function __construct() {
+	public function run(): void {
+
+		// Admin Menu.
+		$admin_menu = new AdminMenu();
+		$admin_menu->run();
+
+		// Enqueue Styles.
 		$this->enqueue_admin_styles();
+
+		// Enqueue Scripts.
 		$this->enqueue_admin_scripts();
-		$this->add_admin_menu();
 	}
 
 	/**
-	 * Adds admin menu item/page.
+	 * Register and Enqueue the Styles for the adminFacing area.
 	 */
-	public function add_admin_menu(): void {
+	public function enqueue_admin_styles(): void {
 		add_action(
-			'admin_menu',
+			'admin_enqueue_scripts',
 			function () {
-				new AdminMenu();
+				new EnqueueAdminStyles();
 			}
 		);
 	}
@@ -36,18 +43,6 @@ class AdminFacing {
 			'admin_enqueue_scripts',
 			function () {
 				new EnqueueAdminScripts();
-			}
-		);
-	}
-
-	/**
-	 * Register and Enqueue the Styles for the adminFacing area.
-	 */
-	public function enqueue_admin_styles(): void {
-		add_action(
-			'admin_enqueue_scripts',
-			function () {
-				new EnqueueAdminStyles();
 			}
 		);
 	}
