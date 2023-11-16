@@ -28,7 +28,7 @@ class PublicFacing {
 		add_action(
 			'wp_enqueue_styles',
 			function () {
-				new EnqueuePublicStyles( $this->plugin_name, $this->plugin_version );
+				new EnqueuePublicStyles( $this->plugin_name(), $this->plugin_version() );
 			}
 		);
 	}

@@ -9,8 +9,8 @@ namespace SapphireSiteManager\Traits;
 trait PluginVersionTrait {
 	/**
 	 * Defines the plugin version.
-	 *
-	 * @var string $plugin_version The version of this plugin.
 	 */
-	protected string $plugin_version = SAPPHIRE_SITE_MANAGER_VERSION;
+	private function plugin_version(): string {
+		return SAPPHIRE_SITE_MANAGER_VERSION;
+	}
 }

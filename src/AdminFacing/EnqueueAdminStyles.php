@@ -42,7 +42,7 @@ class EnqueueAdminStyles {
 			$this->plugin_name() . '-style',
 			$this->plugin_dir_url . 'build/adminFacing/Main.css',
 			array( 'wp-components' ),
-			$this->plugin_version
+			$this->plugin_version()
 		);
 	}
 }

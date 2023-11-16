@@ -47,7 +47,7 @@ class EnqueueAdminScripts {
 
 		// Fallback dependency array.
 		$dependency = array();
-		$version    = $this->plugin_version;
+		$version    = $this->plugin_version();
 
 		// Set dependency and version gets auto generated from js and built to build/adminFacing/Main.asset.php.
 		if ( file_exists( $deps_file ) === true ) {
@@ -66,7 +66,7 @@ class EnqueueAdminScripts {
 
 		// Used to grab root id for render of page.
 		$localize = array(
-			'version' => $this->plugin_version,
+			'version' => $this->plugin_version(),
 			'root_id' => $this->plugin_name(),
 		);
 		wp_set_script_translations( $this->plugin_name(), $this->plugin_name() );
