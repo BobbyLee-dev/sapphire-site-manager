@@ -9,8 +9,8 @@ namespace SapphireSiteManager\Traits;
 trait PluginNameTrait {
 	/**
 	 * Defines the plugin name.
-	 *
-	 * @var string $plugin_name The name of this plugin.
 	 */
-	protected string $plugin_name = SAPPHIRE_SITE_MANAGER_NAME;
+	private function plugin_name(): string {
+		return SAPPHIRE_SITE_MANAGER_NAME;
+	}
 }

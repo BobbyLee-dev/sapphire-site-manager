@@ -16,34 +16,12 @@ class AdminFacing {
 		$admin_menu = new AdminMenu();
 		$admin_menu->run();
 
-		// Enqueue Styles.
-		$this->enqueue_admin_styles();
+		// Enqueue Admin Styles.
+		$admin_styles = new EnqueueAdminStyles();
+		$admin_styles->run();
 
-		// Enqueue Scripts.
-		$this->enqueue_admin_scripts();
-	}
-
-	/**
-	 * Register and Enqueue the Styles for the adminFacing area.
-	 */
-	public function enqueue_admin_styles(): void {
-		add_action(
-			'admin_enqueue_scripts',
-			function () {
-				new EnqueueAdminStyles();
-			}
-		);
-	}
-
-	/**
-	 * Register and Enqueue the JavaScript for the adminFacing area.
-	 */
-	public function enqueue_admin_scripts(): void {
-		add_action(
-			'admin_enqueue_scripts',
-			function () {
-				new EnqueueAdminScripts();
-			}
-		);
+		// Enqueue Admin Scripts.
+		$admin_scripts = new EnqueueAdminScripts();
+		$admin_scripts->run();
 	}
 }

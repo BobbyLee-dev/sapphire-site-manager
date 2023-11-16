@@ -16,25 +16,30 @@ class EnqueueAdminStyles {
 	use PluginDirectoryUrlTrait;
 
 	/**
-	 * Initialize the class and set its properties.
+	 * Setup action to enqueue the admin styles.
 	 */
-	public function __construct() {
-		$this->enqueue_styles();
+	public function run() {
+		add_action(
+			'admin_enqueue_scripts',
+			function () {
+				$this->enqueue_admin_styles();
+			}
+		);
 	}
 
 	/**
 	 * Register the stylesheets for the adminFacing area.
 	 */
-	public function enqueue_styles(): void {
+	public function enqueue_admin_styles(): void {
 		// Only run if is on a Sapphire Site Manager parent page.
 		$screen              = get_current_screen();
-		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_name );
+		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_name() );
 		if ( ! ( isset( $screen->base ) && in_array( $screen->base, $admin_scripts_bases, true ) ) ) {
 			return;
 		}
 
 		wp_enqueue_style(
-			$this->plugin_name . '-style',
+			$this->plugin_name() . '-style',
 			$this->plugin_dir_url . 'build/adminFacing/Main.css',
 			array( 'wp-components' ),
 			$this->plugin_version

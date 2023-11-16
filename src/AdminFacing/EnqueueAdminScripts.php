@@ -20,17 +20,22 @@ class EnqueueAdminScripts {
 	/**
 	 * Initialize the class and set its properties.
 	 */
-	public function __construct() {
-		$this->enqueue_scripts();
+	public function run(): void {
+		add_action(
+			'admin_enqueue_scripts',
+			function () {
+				$this->enqueue_admin_scripts();
+			}
+		);
 	}
 
 	/**
 	 * Register the scripts for the adminFacing area.
 	 */
-	public function enqueue_scripts(): void {
+	public function enqueue_admin_scripts(): void {
 		// Only run if is on a Sapphire Site Manager parent page.
 		$screen              = get_current_screen();
-		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_name );
+		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_name() );
 		if ( ! ( isset( $screen->base ) && in_array( $screen->base, $admin_scripts_bases, true ) ) ) {
 			return;
 		}
@@ -52,7 +57,7 @@ class EnqueueAdminScripts {
 		}
 
 		wp_enqueue_script(
-			$this->plugin_name,
+			$this->plugin_name(),
 			$this->plugin_dir_url . 'build/adminFacing/Main.js',
 			$dependency,
 			$version,
@@ -62,9 +67,9 @@ class EnqueueAdminScripts {
 		// Used to grab root id for render of page.
 		$localize = array(
 			'version' => $this->plugin_version,
-			'root_id' => $this->plugin_name,
+			'root_id' => $this->plugin_name(),
 		);
-		wp_set_script_translations( $this->plugin_name, $this->plugin_name );
-		wp_localize_script( $this->plugin_name, 'sapphireSiteManager', $localize );
+		wp_set_script_translations( $this->plugin_name(), $this->plugin_name() );
+		wp_localize_script( $this->plugin_name(), 'sapphireSiteManager', $localize );
 	}
 }

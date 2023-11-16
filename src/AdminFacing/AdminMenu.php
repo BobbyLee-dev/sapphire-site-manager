@@ -31,9 +31,9 @@ class AdminMenu {
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			'manage_options',
-			$this->plugin_name,
+			$this->plugin_name(),
 			function () {
-				echo '<div id="' . esc_html( $this->plugin_name ) . '"></div>';
+				echo '<div id="' . esc_html( $this->plugin_name() ) . '"></div>';
 			},
 			'dashicons-smiley',
 			null
