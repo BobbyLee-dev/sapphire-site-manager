@@ -24,7 +24,8 @@
 		"phpcompatibility/phpcompatibility-wp": "*",
 		"wp-coding-standards/wpcs": "^3.0",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
-		"dingo-d/wp-pest": "^1.6"
+		"dingo-d/wp-pest": "^1.6",
+		"dingo-d/wp-pest-integration-test-setup": "^1.6"
 	},
 	"prefer-stable": true,
 	"config": {
@@ -37,8 +38,8 @@
 	"scripts": {
 		"lint": "phpcs --standard=phpcs.xml",
 		"fix": "phpcbf --standard=phpcs.xml",
-		"test:unit": "@php ./vendor/bin/pest --group=unit",
-		"test:integration": "@php ./vendor/bin/pest --group=integration",
-		"test:integration": "./vendor/bin/pest --group=unit && ./vendor/bin/pest --group=integration"
+		"test:unit": "./vendor/bin/pest --group=unit",
+		"test:integration": "./vendor/bin/pest --group=integration",
+		"test:all": "./vendor/bin/pest --group=unit && ./vendor/bin/pest --group=integration"
 	}
 }

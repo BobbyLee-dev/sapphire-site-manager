@@ -47,12 +47,17 @@ if ( isset( $GLOBALS['argv'] ) && in_array( '--group=integration', $GLOBALS['arg
 	 */
 	function _manually_load_plugin() {
 		require dirname( __DIR__ ) . '/sapphire-site-manager.php';
+
+		//$plugins_to_activate = array(
+		//	dirname( __FILE__, 2 ) . '/sapphire-site-manager.php'
+		//);
+		//update_option( 'active_plugins', $plugins_to_activate );
 	}
 
 	tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 	require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
-	//require_once dirname( __DIR__ ) . '/vendor/autoload.php';
+	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 	/*
 	 * Bootstrap WordPress. This will also load the Composer autoload file, the PHPUnit Polyfills

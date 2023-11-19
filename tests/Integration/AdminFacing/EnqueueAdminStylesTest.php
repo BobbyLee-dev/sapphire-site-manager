@@ -1,8 +1,10 @@
 <?php
 namespace SapphireSiteManager\Tests\Integration\AdminFacing;
 
-use SapphireSiteManager\AdminFacing\AdminFacing;
+use SapphireSiteManager\AdminFacing\EnqueueAdminStyles;
+use SapphireSiteManager\Traits\PluginVersionTrait;
 use Yoast\WPTestUtils\WPIntegration\TestCase;
+use function PHPUnit\Framework\assertTrue;
 
 if ( isUnitTest() ) {
 	return;
@@ -14,38 +16,81 @@ if ( isUnitTest() ) {
  * factories and proper test cleanup.
  */
 uses( TestCase::class );
+uses( PluginVersionTrait::class );
 
 beforeEach(
 	function () {
 		parent::setUp();
 
-		$this->sapphire_styles = new AdminFacing();
+		$this->sapphire_admin_styles = new EnqueueAdminStyles();
+		//echo get_plugin_page_hook( 'sapphire-site-manager', 'sapphire-site-manager' );
+		//set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		set_current_screen( 'dashboard' );
+		do_action( 'admin_enqueue_scripts', $this->sapphire_admin_styles->enqueue_admin_styles() );
 		global $wp_styles;
-		print_r( $wp_styles->registered );
-		//$GLOBALS['wp_scripts']->registered
-
+		$this->styles  = $wp_styles;
+		$this->version = $this->plugin_version();
 	}
 
 );
 
 afterEach(
 	function () {
-		global $wp_styles;
-		$wp_styles             = null;
-		$this->sapphire_styles = null;
+		$this->sapphire_admin_styles = null;
+		$this->styles                = null;
+		$this->version               = null;
 
 		parent::tearDown();
 	}
 );
 
 test(
-	'Sapphire Site Manager Styles are enqueued',
+	'SSM Admin Styles are not enqueued if not on the frontend (homepage test).',
 	function () {
-		global $wp_styles;
-		echo 'lol';
-		//print_r( wp_style_is( 'sapphire-site-manager-style', 'enqueued' ) );
-		//expect( $menu[0] )
-		//	->toBeArray()
-		//	->and( 'sapphire-site-manager' )->toBeIn( $menu[0] );
+		$this->go_to( '/' );
+		expect( is_home() )->toBeTrue()
+		                   ->and( wp_style_is( 'sapphire-site-manager-style', 'registered' ) )->toBeFalse();
 	}
+
 );
+
+it( 'should not have SSM styles enqueued on admin dashboard.',
+	function () {
+		expect( is_admin() )->toBeTrue()
+		                    ->and( wp_style_is( 'sapphire-site-manager-style', 'registered' ) )->toBeFalse()
+		                    ->and( is_home() )->toBeFalse();
+	} );
+
+
+it( 'should have SSM styles enqueued SSM page.',
+	function () {
+		set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		do_action( 'admin_enqueue_scripts', $this->sapphire_admin_styles->enqueue_admin_styles() );
+		expect( is_admin() )->toBeTrue()
+		                    ->and( wp_style_is( 'sapphire-site-manager-style', 'registered' ) )->toBeTrue()
+		                    ->and( is_home() )->toBeFalse();
+	} );
+
+it( 'should have the handle of "sapphire-site-manager-style".',
+	function () {
+		set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		do_action( 'admin_enqueue_scripts', $this->sapphire_admin_styles->enqueue_admin_styles() );
+		expect( $this->styles->registered['sapphire-site-manager-style'] )->toHaveProperty( 'handle', 'sapphire-site-manager-style' );
+	} );
+
+it( 'should have the src which contains "sapphire-site-manager/build/adminFacing/Main.css".',
+	function () {
+		set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		do_action( 'admin_enqueue_scripts', $this->sapphire_admin_styles->enqueue_admin_styles() );
+		expect( $this->styles->registered['sapphire-site-manager-style'] )->toHaveProperty( 'src' );
+		assertTrue( str_contains(
+			$this->styles->registered['sapphire-site-manager-style']->src,
+			'sapphire-site-manager/build/adminFacing/Main.css' ) );
+	} );
+
+it( 'should have the version that matches the plugin version.',
+	function () {
+		set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		do_action( 'admin_enqueue_scripts', $this->sapphire_admin_styles->enqueue_admin_styles() );
+		expect( $this->styles->registered['sapphire-site-manager-style']->ver )->toEqual( $this->version );
+	} );

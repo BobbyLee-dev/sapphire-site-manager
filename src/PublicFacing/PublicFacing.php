@@ -37,11 +37,11 @@ class PublicFacing {
 	 * Register the JavaScript for the PublicFacing side of the site.
 	 */
 	public function enqueue_scripts(): void {
-		add_action(
-			'wp_enqueue_scripts',
-			function () {
-				new EnqueuePublicScripts( $this->plugin_name, $this->plugin_version );
-			}
-		);
+		//add_action(
+		//	'wp_enqueue_scripts',
+		//	function () {
+		//		new EnqueuePublicScripts( $this->plugin_name, $this->plugin_version );
+		//	}
+		//);
 	}
 }
