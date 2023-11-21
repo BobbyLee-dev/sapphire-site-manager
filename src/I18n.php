@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager;
 
-use SapphireSiteManager\Traits\PluginNameTrait;
+use SapphireSiteManager\Traits\PluginSlugTrait;
 
 /**
  * Define the internationalization functionality.
@@ -12,7 +12,7 @@ use SapphireSiteManager\Traits\PluginNameTrait;
  * so that it is ready for translation.
  */
 class I18n {
-	use PluginNameTrait;
+	use PluginSlugTrait;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -29,7 +29,7 @@ class I18n {
 			'plugins_loaded',
 			function () {
 				load_plugin_textdomain(
-					$this->plugin_name(),
+					$this->plugin_slug(),
 					false,
 					dirname( plugin_basename( __FILE__ ), 2 ) . '/languages/'
 				);

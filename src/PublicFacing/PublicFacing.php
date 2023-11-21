@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\PublicFacing;
 
-use SapphireSiteManager\Traits\PluginNameTrait;
+use SapphireSiteManager\Traits\PluginSlugTrait;
 use SapphireSiteManager\Traits\PluginVersionTrait;
 
 /**
  * The PublicFacing-facing functionality of the plugin.
  */
 class PublicFacing {
-	use PluginNameTrait;
+	use PluginSlugTrait;
 	use PluginVersionTrait;
 
 	/**
@@ -28,7 +28,7 @@ class PublicFacing {
 		add_action(
 			'wp_enqueue_styles',
 			function () {
-				new EnqueuePublicStyles( $this->plugin_name(), $this->plugin_version() );
+				new EnqueuePublicStyles( $this->plugin_slug(), $this->plugin_version() );
 			}
 		);
 	}

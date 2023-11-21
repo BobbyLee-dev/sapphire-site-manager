@@ -30,7 +30,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-const SAPPHIRE_SITE_MANAGER_NAME        = 'sapphire-site-manager';
+const SAPPHIRE_SITE_MANAGER_SLUG        = 'sapphire-site-manager';
+const SAPPHIRE_SITE_MANAGER_NAME        = 'Sapphire Site Manager';
 const SAPPHIRE_SITE_MANAGER_VERSION     = '1.0.0';
 const SAPPHIRE_SITE_MANAGER_PHP_VERSION = '8.0';
 define( 'SAPPHIRE_SITE_MANAGER_URL', plugin_dir_url( __FILE__ ) );

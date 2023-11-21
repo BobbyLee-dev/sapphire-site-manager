@@ -2,6 +2,7 @@
 namespace SapphireSiteManager\Tests\Integration\AdminFacing;
 
 use SapphireSiteManager\AdminFacing\AdminMenu;
+use SapphireSiteManager\Traits\PluginSlugTrait;
 use Yoast\WPTestUtils\WPIntegration\TestCase;
 
 if ( isUnitTest() ) {
@@ -14,19 +15,20 @@ if ( isUnitTest() ) {
  * factories and proper test cleanup.
  */
 uses( TestCase::class );
+uses( PluginSlugTrait::class );
 
 beforeEach(
 	function () {
 		parent::setUp();
 
 		global $menu;
-		$this->sapphire_menu = new AdminMenu();
+		$this->admin_menu = new AdminMenu();
 		//set_current_screen( 'dashboard' );
-		do_action( 'admin_menu', $this->sapphire_menu->create_admin_pages() );
-		set_current_screen( 'toplevel_page_sapphire-site-manager' );
+		do_action( 'admin_menu', $this->admin_menu->create_admin_pages() );
+		set_current_screen( 'toplevel_page_' . $this->plugin_slug() );
 		$this->menu = $menu;
 
-		$data = get_plugin_data( dirname( __DIR__, 3 ) . '/sapphire-site-manager.php' );
+		//$data = get_plugin_data( dirname( __DIR__, 3 ) . '/sapphire-site-manager.php' );
 		//print_r( $data );
 
 	}
@@ -36,9 +38,9 @@ beforeEach(
 afterEach(
 	function () {
 		global $menu;
-		$menu                = null;
-		$this->sapphire_menu = null;
-		$this->menu          = null;
+		$menu             = null;
+		$this->admin_menu = null;
+		$this->menu       = null;
 
 		parent::tearDown();
 	}
@@ -49,7 +51,7 @@ test(
 	function () {
 		expect( $this->menu[0] )
 			->toBeArray()
-			->and( 'sapphire-site-manager' )->toBeIn( $this->menu[0] );
+			->and( $this->plugin_slug() )->toBeIn( $this->menu[0] );
 	}
 
 

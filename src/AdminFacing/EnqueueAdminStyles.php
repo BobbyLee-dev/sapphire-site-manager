@@ -3,7 +3,7 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\AdminFacing;
 
-use SapphireSiteManager\Traits\{PluginDirectoryUrlTrait, PluginNameTrait, PluginVersionTrait};
+use SapphireSiteManager\Traits\{PluginDirectoryUrlTrait, PluginSlugTrait, PluginVersionTrait};
 
 /**
  * Register the stylesheets for the adminFacing area.
@@ -11,7 +11,7 @@ use SapphireSiteManager\Traits\{PluginDirectoryUrlTrait, PluginNameTrait, Plugin
  * @since 1.0.0
  */
 class EnqueueAdminStyles {
-	use PluginNameTrait;
+	use PluginSlugTrait;
 	use PluginVersionTrait;
 	use PluginDirectoryUrlTrait;
 
@@ -33,13 +33,13 @@ class EnqueueAdminStyles {
 	public function enqueue_admin_styles(): void {
 		// Only run if is on a Sapphire Site Manager parent page.
 		$screen              = get_current_screen();
-		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_name() );
+		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_slug() );
 		if ( ! ( isset( $screen->base ) && in_array( $screen->base, $admin_scripts_bases, true ) ) ) {
 			return;
 		}
 
 		wp_enqueue_style(
-			$this->plugin_name() . '-style',
+			$this->plugin_slug() . '-style',
 			$this->plugin_dir_url . 'build/adminFacing/Main.css',
 			array( 'wp-components' ),
 			$this->plugin_version()

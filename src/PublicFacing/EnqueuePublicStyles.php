@@ -3,14 +3,14 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\PublicFacing;
 
-use SapphireSiteManager\Traits\PluginNameTrait;
+use SapphireSiteManager\Traits\PluginSlugTrait;
 use SapphireSiteManager\Traits\PluginVersionTrait;
 
 /**
  * Enqueues public facing styles.
  */
 class EnqueuePublicStyles {
-	use PluginNameTrait;
+	use PluginSlugTrait;
 	use PluginVersionTrait;
 
 	/**
@@ -25,7 +25,7 @@ class EnqueuePublicStyles {
 	 */
 	public function enqueue_scripts(): void {
 		wp_enqueue_style(
-			$this->plugin_name(),
+			$this->plugin_slug(),
 			plugin_dir_url( __FILE__ ) . 'css/sapphire-site-manager-public.css',
 			array(),
 			$this->plugin_version(),

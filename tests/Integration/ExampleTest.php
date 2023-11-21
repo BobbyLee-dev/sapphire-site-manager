@@ -2,6 +2,7 @@
 
 namespace SapphireSiteManager\Tests\Integration;
 
+use WP_REST_Server;
 use Yoast\WPTestUtils\WPIntegration\TestCase;
 
 if ( isUnitTest() ) {
@@ -21,7 +22,7 @@ beforeEach( function () {
 	// Set up a REST server instance.
 	global $wp_rest_server;
 
-	$wp_rest_server = new \WP_REST_Server();
+	$wp_rest_server = new WP_REST_Server();
 
 	$this->server = $wp_rest_server;
 	do_action( 'rest_api_init', $this->server );

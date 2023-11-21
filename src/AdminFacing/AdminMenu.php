@@ -3,13 +3,13 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\AdminFacing;
 
-use SapphireSiteManager\Traits\PluginNameTrait;
+use SapphireSiteManager\Traits\PluginSlugTrait;
 
 /**
  * Create the Admin Menu Item
  */
 class AdminMenu {
-	use PluginNameTrait;
+	use PluginSlugTrait;
 
 	/**
 	 * Setup action to create the admin menu.
@@ -31,9 +31,9 @@ class AdminMenu {
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			esc_html__( 'Sapphire Site Manager', 'sapphire-site-manager' ),
 			'manage_options',
-			$this->plugin_name(),
+			$this->plugin_slug(),
 			function () {
-				echo '<div id="' . esc_html( $this->plugin_name() ) . '"></div>';
+				echo '<div id="' . esc_html( $this->plugin_slug() ) . '"></div>';
 			},
 			'dashicons-smiley',
 			null
