@@ -2,7 +2,9 @@
 namespace SapphireSiteManager\Tests\Integration\AdminFacing;
 
 use SapphireSiteManager\AdminFacing\AdminMenu;
+use SapphireSiteManager\Traits\PluginNameTrait;
 use SapphireSiteManager\Traits\PluginSlugTrait;
+use SapphireSiteManager\Traits\PluginVersionTrait;
 use Yoast\WPTestUtils\WPIntegration\TestCase;
 
 if ( isUnitTest() ) {
@@ -15,7 +17,9 @@ if ( isUnitTest() ) {
  * factories and proper test cleanup.
  */
 uses( TestCase::class );
+uses( PluginVersionTrait::class );
 uses( PluginSlugTrait::class );
+uses( PluginNameTrait::class );
 
 beforeEach(
 	function () {
@@ -47,7 +51,7 @@ afterEach(
 );
 
 test(
-	'Sapphire Site Manager Admin menu exists',
+	'Plugin Admin menu exists',
 	function () {
 		expect( $this->menu[0] )
 			->toBeArray()
@@ -58,18 +62,18 @@ test(
 );
 
 it(
-	'should have page title Sapphire Site Manager',
+	'should have page plugin title as the menu name',
 	function () {
 		expect( $this->menu[0] )
-			->and( 'Sapphire Site Manager' )->toBeIn( $this->menu[0] );
+			->and( $this->plugin_name() )->toBeIn( $this->menu[0] );
 	}
 );
 
 it(
-	'should have top level page - toplevel_page_sapphire-site-manager',
+	'should have top level page with plugin name',
 	function () {
 		expect( $this->menu[0] )
-			->and( 'toplevel_page_sapphire-site-manager' )->toBeIn( $this->menu[0] );
+			->and( 'toplevel_page_' . $this->plugin_slug() )->toBeIn( $this->menu[0] );
 	}
 );
 
