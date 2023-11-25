@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\AdminFacing;
+namespace SapphireSiteManager\AdminFacing\Menu;
 
 use SapphireSiteManager\Traits\PluginSlugTrait;
 

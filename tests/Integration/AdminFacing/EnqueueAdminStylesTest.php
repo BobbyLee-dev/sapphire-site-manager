@@ -30,10 +30,27 @@ beforeEach(
 		//echo get_plugin_page_hook( $this->plugin_slug(), $this->plugin_slug() );
 		//set_current_screen( 'toplevel_page_' . $this->plugin_slug() );
 		set_current_screen( 'dashboard' );
-		do_action( 'admin_enqueue_scripts', $this->admin_styles->enqueue_admin_styles() );
+		//do_action( 'admin_enqueue_scripts', $this->admin_styles->enqueue_admin_styles() );
+
+		// Create a user and log them in
+		$this->user_id = $this::factory()->user->create();
+		wp_set_current_user( $this->user_id );
+
+		// Trigger the wp hook to set up user capabilities
+		do_action( 'wp' );
+
+		// Create a test page
+		$this->test_page_id = $this->factory->post->create( array(
+			'post_title'   => 'Test Page',
+			'post_content' => 'Welcome to the Test Page content.',
+			'post_type'    => 'page',
+		) );
+
 		global $wp_styles;
 		$this->styles  = $wp_styles;
 		$this->version = $this->plugin_version();
+		$this->user_id = $this->factory->user->create();
+		wp_set_current_user( $this->user_id );
 	}
 
 );
@@ -43,28 +60,45 @@ afterEach(
 		$this->admin_styles = null;
 		$this->styles       = null;
 		$this->version      = null;
+		wp_set_current_user( 0 );
+		wp_delete_post( $this->test_page_id, true );
 
 		parent::tearDown();
 	}
 );
 
 test(
-	'Admin Styles are not enqueued if not on the frontend (homepage test).',
+	'Admin Styles are not enqueued if not logged in.',
 	function () {
-		$this->go_to( '/' );
+		wp_set_current_user( 0 );
+		do_action( 'wp_enqueue_scripts', $this->admin_styles->enqueue_admin_styles() );
+		$this->go_to( home_url() );
 		expect( is_home() )->toBeTrue()
-		                   ->and( wp_style_is( $this->plugin_slug() . '-style', 'registered' ) )->toBeFalse();
+		                   ->and( wp_style_is( $this->plugin_slug() . '-style', 'enqueued' ) )->toBeFalse();
 	}
 
 );
 
-it( 'should not have the styles enqueued on admin dashboard.',
+test(
+	'Admin Styles are enqueued if on admin screen.',
 	function () {
-		expect( is_admin() )->toBeTrue()
-		                    ->and( wp_style_is( $this->plugin_slug() . '-style', 'registered' ) )->toBeFalse()
-		                    ->and( is_home() )->toBeFalse();
-	} );
+		set_current_screen( 'admin' );
+		do_action( 'admin_enqueue_scripts' );
+		expect( wp_style_is( $this->plugin_slug() . '-style', 'registered' ) )->toBeTrue();
+	}
 
+);
+
+test(
+	'Admin Styles are enqueued if on homepage while logged in.',
+	function () {
+		$this->go_to( get_permalink( $this->test_page_id ) );
+		echo get_the_title();
+		// Set up post data for the homepage
+		expect( wp_style_is( $this->plugin_slug() . '-style', 'registered' ) )->toBeTrue();
+	}
+
+);
 
 it( 'should have the styles enqueued on the plugin admin page.',
 	function () {

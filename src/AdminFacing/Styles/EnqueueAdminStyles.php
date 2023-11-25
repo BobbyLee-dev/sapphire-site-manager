@@ -31,18 +31,20 @@ class EnqueueAdminStyles {
 	 * Register the stylesheets for the adminFacing area.
 	 */
 	public function enqueue_admin_styles(): void {
-		// Only run if is on a Sapphire Site Manager parent page.
-		$screen              = get_current_screen();
-		$admin_scripts_bases = array( 'toplevel_page_' . $this->plugin_slug() );
-		if ( ! ( isset( $screen->base ) && in_array( $screen->base, $admin_scripts_bases, true ) ) ) {
-			return;
+		foreach ( glob( dirname( __DIR__, 1 ) . DIRECTORY_SEPARATOR . 'Styles' . DIRECTORY_SEPARATOR . 'Style' . DIRECTORY_SEPARATOR . '*.php' ) as $path ) {
+			$style_name = 'SapphireSiteManager\AdminFacing\Styles\Style\\' . wp_basename( $path, '.php' );
+			if ( class_exists( $style_name ) ) {
+				$create_style = new $style_name();
+				if ( $create_style->conditionals() ) {
+					wp_enqueue_style(
+						$create_style->handle(),
+						$create_style->src(),
+						$create_style->dependencies(),
+						$create_style->version(),
+						$create_style->media()
+					);
+				}
+			}
 		}
-
-		wp_enqueue_style(
-			$this->plugin_slug() . '-style',
-			$this->my_plugin_dir_url() . 'build/adminFacing/Main.css',
-			array( 'wp-components' ),
-			$this->plugin_version()
-		);
 	}
 }

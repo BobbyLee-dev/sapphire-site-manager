@@ -1,7 +1,7 @@
 <?php
 namespace SapphireSiteManager\Tests\Integration\AdminFacing;
 
-use SapphireSiteManager\AdminFacing\AdminMenu;
+use SapphireSiteManager\AdminFacing\Menu\AdminMenu;
 use SapphireSiteManager\Traits\PluginNameTrait;
 use SapphireSiteManager\Traits\PluginSlugTrait;
 use SapphireSiteManager\Traits\PluginVersionTrait;

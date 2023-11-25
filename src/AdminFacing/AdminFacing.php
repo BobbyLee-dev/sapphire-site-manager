@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\AdminFacing;
 
+use SapphireSiteManager\AdminFacing\Menu\AdminMenu;
+use SapphireSiteManager\AdminFacing\Scripts\EnqueueAdminScripts;
 use SapphireSiteManager\AdminFacing\Styles\EnqueueAdminStyles;
 
 /**

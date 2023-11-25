@@ -16,14 +16,14 @@ interface CPTInterface {
 	 *
 	 * @see https://developer.wordpress.org/reference/functions/register_post_type/
 	 *
-	 * @return array
+	 * @return (string|int|bool)[]
 	 */
 	public function args(): array;
 
 	/**
 	 * Register_post_type $args['labels'].
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function labels(): array;
 }
