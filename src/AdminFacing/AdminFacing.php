@@ -3,6 +3,8 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\AdminFacing;
 
+use SapphireSiteManager\AdminFacing\Styles\EnqueueAdminStyles;
+
 /**
  * Defines the admin functionality and classes.
  */

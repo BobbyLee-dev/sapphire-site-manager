@@ -9,13 +9,6 @@ namespace SapphireSiteManager\CPT;
 class RegisterCPTs {
 
 	/**
-	 * Array for CPTs
-	 *
-	 * @var CPTInterface[] $cpts
-	 */
-	private array $cpts = [];
-
-	/**
 	 * Initialize the class and set its properties.
 	 */
 	public function __construct() {

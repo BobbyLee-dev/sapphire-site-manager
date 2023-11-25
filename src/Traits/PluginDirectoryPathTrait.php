@@ -9,8 +9,10 @@ namespace SapphireSiteManager\Traits;
 trait PluginDirectoryPathTrait {
 	/**
 	 * Defines the plugin directory path.
-	 *
-	 * @var string $plugin_dir_path The directory path of this plugin.
 	 */
-	protected string $plugin_dir_path = SAPPHIRE_SITE_MANAGER_PATH;
+	private function my_plugin_dir_path(): string {
+		// @phpstan-ignore-next-line
+		return SAPPHIRE_SITE_MANAGER_PATH;
+
+	}
 }

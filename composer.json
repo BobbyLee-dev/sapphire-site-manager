@@ -25,14 +25,18 @@
 		"wp-coding-standards/wpcs": "^3.0",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
 		"dingo-d/wp-pest": "^1.6",
-		"dingo-d/wp-pest-integration-test-setup": "^1.6"
+		"dingo-d/wp-pest-integration-test-setup": "^1.6",
+		"phpstan/phpstan": "^1.10",
+		"szepeviktor/phpstan-wordpress": "^1.3",
+		"phpstan/extension-installer": "^1.3"
 	},
 	"prefer-stable": true,
 	"config": {
 		"allow-plugins": {
 			"dealerdirect/phpcodesniffer-composer-installer": true,
 			"composer/installers": true,
-			"pestphp/pest-plugin": true
+			"pestphp/pest-plugin": true,
+			"phpstan/extension-installer": true
 		}
 	},
 	"scripts": {
@@ -40,6 +44,7 @@
 		"fix": "phpcbf --standard=phpcs.xml",
 		"test:unit": "./vendor/bin/pest --group=unit",
 		"test:integration": "./vendor/bin/pest --group=integration",
-		"test:all": "./vendor/bin/pest --group=unit && ./vendor/bin/pest --group=integration"
+		"test:all": "./vendor/bin/pest --group=unit && ./vendor/bin/pest --group=integration",
+		"phpstan": "phpstan analyse --memory-limit=2048M"
 	}
 }

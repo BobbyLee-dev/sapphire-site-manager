@@ -1,7 +1,7 @@
 <?php
 namespace SapphireSiteManager\Tests\Integration\AdminFacing;
 
-use SapphireSiteManager\AdminFacing\EnqueueAdminStyles;
+use SapphireSiteManager\AdminFacing\Styles\EnqueueAdminStyles;
 use SapphireSiteManager\Traits\PluginNameTrait;
 use SapphireSiteManager\Traits\PluginSlugTrait;
 use SapphireSiteManager\Traits\PluginVersionTrait;

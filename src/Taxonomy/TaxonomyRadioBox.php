@@ -88,12 +88,12 @@ class TaxonomyRadioBox {
 	 * Defines custom taxonomies.
 	 *
 	 * @param string $tax_slug Taxonomy slug.
-	 * @param array  $post_types post-types to display custom metabox.
+	 * @param array $post_types post-types to display custom metabox.
 	 * @param string $default_selection the default radio box selection.
 	 */
 	public function __construct( $tax_slug, $post_types = array(), $default_selection = '' ) {
 		$this->slug              = $tax_slug;
-		$this->post_types        = is_array( $post_types ) ? $post_types : array( $post_types );
+		$this->post_types        = $post_types;
 		$this->default_selection = $default_selection;
 	}
 
@@ -115,6 +115,39 @@ class TaxonomyRadioBox {
 				$this->priority
 			);
 		}
+	}
+
+	/**
+	 * Gets the taxonomy's associated post_types
+	 *
+	 * @return array Taxonomy's associated post_types
+	 */
+	public function post_types() {
+		$this->post_types = ! empty( $this->post_types ) ? $this->post_types : $this->taxonomy()->object_type;
+
+		return $this->post_types;
+	}
+
+	/**
+	 * Gets the taxonomy object from the slug
+	 *
+	 * @return object Taxonomy object
+	 */
+	public function taxonomy() {
+		$this->taxonomy = ! empty( $this->taxonomy ) ? $this->taxonomy : get_taxonomy( $this->slug );
+
+		return $this->taxonomy;
+	}
+
+	/**
+	 * Gets the metabox title from the taxonomy object's labels (or uses the passed in title)
+	 *
+	 * @return string Metabox title
+	 */
+	public function metabox_title(): string {
+		$this->metabox_title = ! empty( $this->metabox_title ) ? $this->metabox_title : $this->taxonomy()->labels->name;
+
+		return $this->metabox_title;
 	}
 
 	/**
@@ -155,44 +188,11 @@ class TaxonomyRadioBox {
 		// loop our terms and check if they're associated with this post.
 		foreach ( $terms as $term ) {
 			$val = $h ? $term->term_id : $term->slug;
-			echo '<li id="' . esc_html( $this->slug ) . '_tax-' . esc_html( $term->term_id ) . '"><label><input value="' . esc_html( $val ) . '" type="radio" name="' . esc_html( $name ) . '" id="in-' . esc_html( $this->slug ) . '_tax-' . esc_html( $term->term_id ) . '" ';
+			echo '<li id="' . esc_html( $this->slug ) . '_tax-' . esc_html( strval( $term->term_id ) ) . '"><label><input value="' . esc_html( $val ) . '" type="radio" name="' . esc_html( $name ) . '" id="in-' . esc_html( $this->slug ) . '_tax-' . esc_html( strval( $term->term_id ) ) . '" ';
 			// if so, they get "checked".
 			checked( ! empty( $existing ) && in_array( $term->term_id, $existing, true ) );
 			echo '> ' . esc_html( $term->name ) . '</label></li>';
 		}
 		echo '</ul></div>';
-	}
-
-	/**
-	 * Gets the taxonomy object from the slug
-	 *
-	 * @return object Taxonomy object
-	 */
-	public function taxonomy() {
-		$this->taxonomy = ! empty( $this->taxonomy ) ? $this->taxonomy : get_taxonomy( $this->slug );
-
-		return $this->taxonomy;
-	}
-
-	/**
-	 * Gets the taxonomy's associated post_types
-	 *
-	 * @return array Taxonomy's associated post_types
-	 */
-	public function post_types() {
-		$this->post_types = ! empty( $this->post_types ) ? $this->post_types : $this->taxonomy()->object_type;
-
-		return $this->post_types;
-	}
-
-	/**
-	 * Gets the metabox title from the taxonomy object's labels (or uses the passed in title)
-	 *
-	 * @return string Metabox title
-	 */
-	public function metabox_title(): string {
-		$this->metabox_title = ! empty( $this->metabox_title ) ? $this->metabox_title : $this->taxonomy()->labels->name;
-
-		return $this->metabox_title;
 	}
 }

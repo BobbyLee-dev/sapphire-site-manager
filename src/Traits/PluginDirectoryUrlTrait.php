@@ -7,10 +7,14 @@ namespace SapphireSiteManager\Traits;
  * Trait that defines the plugin url.
  */
 trait PluginDirectoryUrlTrait {
+
 	/**
 	 * Defines the plugin directory url.
 	 *
-	 * @var string $plugin_dir_url The url of this plugin.
+	 * @return non-empty-string
 	 */
-	protected string $plugin_dir_url = SAPPHIRE_SITE_MANAGER_URL;
+	private function my_plugin_dir_url(): string {
+		// @phpstan-ignore-next-line
+		return SAPPHIRE_SITE_MANAGER_URL;
+	}
 }

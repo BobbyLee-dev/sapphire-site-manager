@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\AdminFacing;
+namespace SapphireSiteManager\AdminFacing\Styles;
 
 use SapphireSiteManager\Traits\{PluginDirectoryUrlTrait, PluginSlugTrait, PluginVersionTrait};
 
@@ -18,7 +18,7 @@ class EnqueueAdminStyles {
 	/**
 	 * Setup action to enqueue the admin styles.
 	 */
-	public function run() {
+	public function run(): void {
 		add_action(
 			'admin_enqueue_scripts',
 			function () {
@@ -40,7 +40,7 @@ class EnqueueAdminStyles {
 
 		wp_enqueue_style(
 			$this->plugin_slug() . '-style',
-			$this->plugin_dir_url . 'build/adminFacing/Main.css',
+			$this->my_plugin_dir_url() . 'build/adminFacing/Main.css',
 			array( 'wp-components' ),
 			$this->plugin_version()
 		);

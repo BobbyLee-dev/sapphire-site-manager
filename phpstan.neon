@@ -1,0 +1,7 @@
+parameters:
+  level: 6
+  paths:
+    - src/
+  bootstrapFiles:
+  	- sapphire-site-manager.php
+

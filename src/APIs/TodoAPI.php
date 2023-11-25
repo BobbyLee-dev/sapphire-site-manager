@@ -3,7 +3,10 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\APIs;
 
+use stdClass;
+use WP_Post;
 use WP_Query;
+use WP_REST_Request;
 
 /**
  * API Endpoints for To-dos
@@ -15,6 +18,7 @@ use WP_Query;
  * @author     Bobby Lee <bobbylee.dev@gmail.com>
  */
 class TodoAPI {
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -59,7 +63,7 @@ class TodoAPI {
 	/**
 	 * Get all todos
 	 *
-	 * @return WP_Query
+	 * @return array
 	 * @since 1.0.0
 	 * @uses WP_Query
 	 */
@@ -68,29 +72,42 @@ class TodoAPI {
 			'post_type'      => 'sapphire-sm-todo',
 			'posts_per_page' => - 1,
 			'order'          => 'ASC',
-			'post_status'    => array(
-				'publish',
-				'pending',
-				'draft',
-				'private',
-				'inherit',
-			),
+			//'post_status'    => array(
+			//	'publish',
+			//	'pending',
+			//	'draft',
+			//	'private',
+			//	'inherit',
+			//),
 		);
 
-		$query = new \WP_Query( $args );
+		$query = new WP_Query( $args );
 
+		$todos_array = [];
 		foreach ( $query->posts as $todo ) {
-			$status_terms        = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
-			$priority_terms      = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_priority' ) );
-			$todo->status        = ! empty( $status_terms ) ? $status_terms[0]->slug : 'not-started';
-			$todo->status_name   = ! empty( $status_terms ) ? $status_terms[0]->name : 'Not Started';
-			$todo->priority      = ! empty( $priority_terms ) ? $priority_terms[0]->slug : 'not-set';
-			$todo->priority_name = ! empty( $priority_terms ) ? $priority_terms[0]->name : 'Not Set';
+
+			$todo_properties = new stdClass();
+			if ( $todo instanceof WP_Post ) {
+				$todos_properties = get_object_vars( $todo );
+				foreach ( $todos_properties as $property => $value ) {
+					$todo_properties->$property = $value;
+				}
+			}
+
+			$todo_properties->status        = ! empty( $status_terms ) ? $status_terms[0]->slug : 'not-started';
+			$todo_properties->status_name   = ! empty( $status_terms ) ? $status_terms[0]->name : 'Not Started';
+			$todo_properties->priority      = ! empty( $priority_terms ) ? $priority_terms[0]->slug : 'not-set';
+			$todo_properties->priority_name = ! empty( $priority_terms ) ? $priority_terms[0]->name : 'Not Set';
+			$status_terms                   = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
+			$priority_terms                 = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_priority' ) );
+
+			$todos_array[] = $todo_properties;
 		}
 
 		wp_reset_postdata();
 
 		return array(
+			'all_todos'  => $todos_array,
 			'statuses'   => get_terms(
 				array(
 					'taxonomy'   => 'sapphire_todo_status',
@@ -105,20 +122,19 @@ class TodoAPI {
 					'orderby'    => 'term_order',
 				)
 			),
-			'all_todos'  => $query->posts,
 		);
 	}
 
 	/**
 	 * Get single todo
 	 *
-	 * @param \WP_REST_Request $request // Incoming request.
+	 * @param WP_REST_Request $request // Incoming request.
 	 *
-	 * @returns \WP_Post|string
+	 * @returns WP_Post|string
 	 * @uses get_post()
 	 * @since 1.0.
 	 */
-	public static function get_todo( \WP_REST_Request $request ): \WP_Post|string {
+	public static function get_todo( WP_REST_Request $request ): WP_Post|string {
 		$post_id = $request['id'];
 		if ( ! empty( $post_id ) ) {
 			$todo = get_post( $post_id );

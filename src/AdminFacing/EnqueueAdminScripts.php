@@ -43,7 +43,7 @@ class EnqueueAdminScripts {
 		// Backbone JS Client - https://developer.wordpress.org/rest-api/using-the-rest-api/backbone-javascript-client/
 		// wp_enqueue_script( 'wp-api' );
 		// Scripts dependency files gets auto generated.
-		$deps_file = $this->plugin_dir_path . 'build/adminFacing/Main.asset.php';
+		$deps_file = $this->my_plugin_dir_path() . 'build/adminFacing/Main.asset.php';
 
 		// Fallback dependency array.
 		$dependency = array();
@@ -58,7 +58,7 @@ class EnqueueAdminScripts {
 
 		wp_enqueue_script(
 			$this->plugin_slug(),
-			$this->plugin_dir_url . 'build/adminFacing/Main.js',
+			$this->my_plugin_dir_url() . 'build/adminFacing/Main.js',
 			$dependency,
 			$version,
 			true
