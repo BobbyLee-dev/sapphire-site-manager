@@ -1,5 +1,5 @@
 <?php
-namespace SapphireSiteManager\Tests\Integration\AdminFacing;
+namespace SapphireSiteManager\Tests\Integration\AdminFacing\Scripts;
 
 use SapphireSiteManager\AdminFacing\Scripts\EnqueueAdminScripts;
 use SapphireSiteManager\Traits\PluginNameTrait;

@@ -1,5 +1,5 @@
 <?php
-namespace SapphireSiteManager\Tests\Integration\AdminFacing;
+namespace SapphireSiteManager\Tests\Integration\AdminFacing\Styles\Style;
 
 use SapphireSiteManager\AdminFacing\Styles\Style\MainStyle;
 use SapphireSiteManager\Traits\PluginDirectoryUrlTrait;
