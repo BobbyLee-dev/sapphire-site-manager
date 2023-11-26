@@ -4,7 +4,7 @@ use Yoast\WPTestUtils\WPIntegration;
 
 // Autoload everything for unit tests.
 $ds = DIRECTORY_SEPARATOR;
-require_once dirname( __DIR__, 1 ) . $ds . 'vendor' . $ds . 'autoload.php';
+require_once dirname( __DIR__ ) . $ds . 'vendor' . $ds . 'autoload.php';
 
 /**
  * Include core bootstrap for an integration test suite
@@ -18,12 +18,12 @@ if ( isset( $GLOBALS['argv'] ) && in_array( '--group=integration', $GLOBALS['arg
 	if ( ! file_exists( dirname( __DIR__, 1 ) . '/wp/tests/phpunit/wp-tests-config.php' ) ) {
 		// We need to set up core config details and test details.
 		copy(
-			dirname( __DIR__, 1 ) . '/wp/wp-tests-config-sample.php',
-			dirname( __DIR__, 1 ) . '/wp/tests/phpunit/wp-tests-config.php'
+			dirname( __DIR__ ) . '/wp/wp-tests-config-sample.php',
+			dirname( __DIR__ ) . '/wp/tests/phpunit/wp-tests-config.php'
 		);
 
 		// Change certain constants from the test's config file.
-		$testConfigPath     = dirname( __DIR__, 1 ) . '/wp/tests/phpunit/wp-tests-config.php';
+		$testConfigPath     = dirname( __DIR__ ) . '/wp/tests/phpunit/wp-tests-config.php';
 		$testConfigContents = file_get_contents( $testConfigPath );
 
 		$testConfigContents = str_replace(
@@ -40,24 +40,18 @@ if ( isset( $GLOBALS['argv'] ) && in_array( '--group=integration', $GLOBALS['arg
 	}
 
 // Give access to tests_add_filter() function.
-	require_once dirname( __DIR__, 1 ) . '/wp/tests/phpunit/includes/functions.php';
+	require_once dirname( __DIR__ ) . '/wp/tests/phpunit/includes/functions.php';
 
 	/**
 	 * Manually load the plugin being tested.
 	 */
 	function _manually_load_plugin() {
 		require dirname( __DIR__ ) . '/sapphire-site-manager.php';
-
-		//$plugins_to_activate = array(
-		//	dirname( __FILE__, 2 ) . '/sapphire-site-manager.php'
-		//);
-		//update_option( 'active_plugins', $plugins_to_activate );
 	}
 
 	tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 	require_once dirname( __DIR__ ) . '/vendor/yoast/wp-test-utils/src/WPIntegration/bootstrap-functions.php';
-	require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 
 	/*
 	 * Bootstrap WordPress. This will also load the Composer autoload file, the PHPUnit Polyfills
