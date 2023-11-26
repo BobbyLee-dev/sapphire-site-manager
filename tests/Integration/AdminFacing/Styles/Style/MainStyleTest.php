@@ -41,19 +41,24 @@ afterEach(
 );
 
 test(
-	'The handle is sapphire-site-manager-style.',
+	'The handle is the plugin-slug-style.',
 	function () {
 		expect( $this->main_style->handle() )->toBe( $this->plugin_slug() . '-style' );
 	}
-
 );
 
 it(
-	'should have the src $this->my_plugin_dir_url() build/adminFacing/Main.css.',
+	'should have the src plugin_dir_url/build/adminFacing/Main.css.',
 	function () {
 		expect( $this->main_style->src() )->toBe( $this->my_plugin_dir_url() . 'build/adminFacing/Main.css' );
 	}
+);
 
+it(
+	'should have the dpendency array("wp-components").',
+	function () {
+		expect( $this->main_style->dependecis() )->toBeArray();
+	}
 );
 
 

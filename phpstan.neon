@@ -4,4 +4,6 @@ parameters:
     - src/
   bootstrapFiles:
   	- sapphire-site-manager.php
+  excludePaths:
+    - tests/*
 
