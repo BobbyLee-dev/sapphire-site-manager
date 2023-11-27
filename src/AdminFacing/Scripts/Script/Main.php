@@ -19,6 +19,9 @@ class Main implements ScriptInterface {
 	use PluginDirectoryPathTrait;
 
 	private string $dependencies_file;
+
+	/**
+	 */
 	private array $dependencies;
 
 	public function __construct() {

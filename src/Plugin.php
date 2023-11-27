@@ -24,6 +24,8 @@ class Plugin {
 		// Admin.
 		$admin_facing = new AdminFacing();
 		$admin_facing->run();
+		// TODO - move to admin class.
+		remove_all_actions( 'admin_notices' );
 
 		// Public.
 		new PublicFacing();
