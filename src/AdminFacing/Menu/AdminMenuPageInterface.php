@@ -2,6 +2,6 @@
 
 namespace SapphireSiteManager\AdminFacing\Menu;
 
-interface AdminMenuInterface {
+interface AdminMenuPageInterface {
 
 }
