@@ -6,11 +6,11 @@
 	"license": "GPL-2.0-or-later",
 	"main": "build/index.js",
 	"scripts": {
-		"build": "wp-scripts build app/Dashboard/Main.js --output-path=build/Dashboard",
+		"build": "wp-scripts build app/app.jsx --output-path=build/",
 		"format": "wp-scripts format",
 		"lint:css": "wp-scripts lint-style",
 		"lint:js": "wp-scripts lint-js",
-		"start": "wp-scripts start app/Dashboard/Main.js --output-path=build/Dashboard",
+		"start": "wp-scripts start app/app.jsx --output-path=build/",
 		"packages-update": "wp-scripts packages-update",
 		"lint:php": "vendor/bin/phpcs",
 		"lint:php:fix": "vendor/bin/phpcbf",

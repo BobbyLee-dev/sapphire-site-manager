@@ -3,7 +3,7 @@ import {memo, useState} from '@wordpress/element'
 import apiFetch from '@wordpress/api-fetch'
 
 // Router
-import {useLocation, Link, useParams, useNavigate} from 'react-router-dom'
+import {Link, useLocation, useNavigate, useParams} from 'react-router-dom'
 
 // React Query
 import {useQuery} from 'react-query'
@@ -12,17 +12,10 @@ import {useQuery} from 'react-query'
 import {Typography} from '@mui/joy'
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
-import {PlusSquare, ArrowLeftCircle, ArrowLeft, UserCheck} from 'react-feather'
-import Select from '@mui/joy/Select'
-import Option from '@mui/joy/Option'
+import {ArrowLeft, PlusSquare} from 'react-feather'
 
 // Lodash
 import {isEmpty} from 'lodash'
-import {addQueryArgs} from '@wordpress/url'
-import ListItemButton from '@mui/joy/ListItemButton'
-import ListItemDecorator from '@mui/joy/ListItemDecorator'
-import ListItemContent from '@mui/joy/ListItemContent'
-import Chip from '@mui/joy/Chip'
 
 const EditToDoIframe = memo(({src}) => (
 	<iframe src={src}/>
@@ -50,7 +43,7 @@ function fetchTodoById({queryKey}) {
 	return fetchTodo(todoId)
 }
 
-export default function Todo(props) {
+export default function SingleTodo(props) {
 	let todoData = {}
 	const navigate = useNavigate()
 	const passedDownData = useLocation()

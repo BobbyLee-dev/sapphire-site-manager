@@ -41,7 +41,7 @@ class MainStyle implements StyleInterface {
 	 * @inheritDoc
 	 */
 	public function src(): string {
-		return $this->my_plugin_dir_url() . 'build/Dashboard/Main.css';
+		return $this->my_plugin_dir_url() . 'build/app.jsx.css';
 	}
 
 	/**

@@ -1,20 +1,9 @@
 // WordPress
-import {render, useContext} from '@wordpress/element'
-
 // Router
-import {
-	HashRouter,
-	Route,
-	Routes,
-	Navigate,
-	createHashRouter,
-	RouterProvider,
-	createBrowserRouter,
-	createRoutesFromElements
-} from 'react-router-dom'
+import {HashRouter, Route, Routes} from 'react-router-dom'
 
 // React Query
-import {QueryClientProvider, QueryClient} from 'react-query'
+import {QueryClient, QueryClientProvider} from 'react-query'
 
 // JoyUI
 import {CssVarsProvider} from '@mui/joy/styles'
@@ -26,18 +15,17 @@ import Box from '@mui/joy/Box'
 import Typography from '@mui/joy/Typography'
 
 // Local Components
-import './main.scss'
+import './dashboard.scss'
 import '../assets/feather.min.js'
-import Todos from './pages/Todos'
-import TodoTable from './components/todos/TodoTable'
-import Todo from './components/todos/Todo'
-import Sidebar from './components/Sidebar'
-import customTheme from './components/theme'
-import NewTodo from './components/todos/NewTodo'
+import Todos from './Todos/Todos'
+import Sidebar from './dashboardComponents/Sidebar'
+import customTheme from './dashboardComponents/theme'
+import SingleTodo from "./Todos/todoComponents/SingleTodo";
+import NewTodo from "./Todos/todoComponents/NewTodo";
 
 const queryClient = new QueryClient()
 
-export default function Main() {
+export default function DashBoard() {
 	return (
 		<CssVarsProvider disableTransitionOnChange theme={customTheme}>
 			<GlobalStyles
@@ -101,7 +89,7 @@ export default function Main() {
 								<Route
 									exact
 									path={'/todos/:todoId'}
-									element={<Todo/>}
+									element={<SingleTodo/>}
 								/>
 								<Route
 									exact
@@ -121,13 +109,3 @@ export default function Main() {
 		</CssVarsProvider>
 	)
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-	if (
-		'undefined' !==
-		typeof document.getElementById(sapphireSiteManager.root_id) &&
-		null !== document.getElementById(sapphireSiteManager.root_id)
-	) {
-		render(<Main/>, document.getElementById(sapphireSiteManager.root_id))
-	}
-})
