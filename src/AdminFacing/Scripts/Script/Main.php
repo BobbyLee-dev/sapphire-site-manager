@@ -10,7 +10,7 @@ use SapphireSiteManager\Traits\PluginVersionTrait;
 
 /**
  * Register the main script for the adminFacing area.
- * /build/adminFacing/Main.js
+ * /build/Dashboard/Main.js
  */
 class Main implements ScriptInterface {
 	use PluginSlugTrait;
@@ -25,7 +25,7 @@ class Main implements ScriptInterface {
 	private array $dependencies;
 
 	public function __construct() {
-		$this->dependencies_file = $this->my_plugin_dir_path() . 'build/adminFacing/Main.asset.php';
+		$this->dependencies_file = $this->my_plugin_dir_path() . 'build/Dashboard/Main.asset.php';
 
 		if ( file_exists( $this->dependencies_file ) === true ) {
 			$this->dependencies = include $this->dependencies_file;
@@ -61,11 +61,11 @@ class Main implements ScriptInterface {
 	 * @inheritDoc
 	 */
 	public function src(): string {
-		return $this->my_plugin_dir_url() . 'build/adminFacing/Main.js';
+		return $this->my_plugin_dir_url() . 'build/Dashboard/Main.js';
 	}
 
 	/**
-	 * Get the dependencies from build/adminFacing/Main.asset.php
+	 * Get the dependencies from build/Dashboard/Main.asset.php
 	 *
 	 * @inheritDoc
 	 */

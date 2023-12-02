@@ -104,13 +104,13 @@ it( 'should have the plugin style handle/name',
 		expect( $this->styles->registered[ $this->plugin_slug() . '-style' ] )->toHaveProperty( 'handle', $this->plugin_slug() . '-style' );
 	} );
 
-it( 'should have the src which contains "/build/adminFacing/Main.css".',
+it( 'should have the src which contains "/build/Dashboard/Main.css".',
 	function () {
 		do_action( 'admin_enqueue_scripts' );
 		expect( $this->styles->registered[ $this->plugin_slug() . '-style' ] )->toHaveProperty( 'src' );
 		assertTrue( str_contains(
 			$this->styles->registered[ $this->plugin_slug() . '-style' ]->src,
-			$this->plugin_slug() . '/build/adminFacing/Main.css' ) );
+			$this->plugin_slug() . '/build/Dashboard/Main.css' ) );
 	} );
 
 it( 'should have the version that matches the plugin version.',

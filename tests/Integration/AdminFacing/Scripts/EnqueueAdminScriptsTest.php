@@ -86,14 +86,14 @@ it( 'should have the scripts enqueued on the plugin admin page.',
 //		expect( $this->styles->registered[ $this->plugin_slug() . '-style' ] )->toHaveProperty( 'handle', $this->plugin_slug() . '-style' );
 //	} );
 //
-//it( 'should have the src which contains "/build/adminFacing/Main.css".',
+//it( 'should have the src which contains "/build/Dashboard/Main.css".',
 //	function () {
 //		set_current_screen( 'toplevel_page_' . $this->plugin_slug() );
 //		do_action( 'admin_enqueue_scripts', $this->admin_styles->enqueue_admin_styles() );
 //		expect( $this->styles->registered[ $this->plugin_slug() . '-style' ] )->toHaveProperty( 'src' );
 //		assertTrue( str_contains(
 //			$this->styles->registered[ $this->plugin_slug() . '-style' ]->src,
-//			$this->plugin_slug() . '/build/adminFacing/Main.css' ) );
+//			$this->plugin_slug() . '/build/Dashboard/Main.css' ) );
 //	} );
 //
 //it( 'should have the version that matches the plugin version.',

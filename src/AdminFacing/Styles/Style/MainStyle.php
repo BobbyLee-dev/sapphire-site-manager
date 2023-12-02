@@ -9,7 +9,7 @@ use SapphireSiteManager\Traits\PluginVersionTrait;
 
 /**
  * Register the main stylesheet for the adminFacing area.
- * /build/adminFacing/Main.css
+ * /build/Dashboard/Main.css
  */
 class MainStyle implements StyleInterface {
 	use PluginSlugTrait;
@@ -41,7 +41,7 @@ class MainStyle implements StyleInterface {
 	 * @inheritDoc
 	 */
 	public function src(): string {
-		return $this->my_plugin_dir_url() . 'build/adminFacing/Main.css';
+		return $this->my_plugin_dir_url() . 'build/Dashboard/Main.css';
 	}
 
 	/**

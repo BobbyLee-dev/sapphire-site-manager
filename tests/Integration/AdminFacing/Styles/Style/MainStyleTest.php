@@ -65,9 +65,9 @@ it(
 );
 
 it(
-	'should have the src plugin_dir_url/build/adminFacing/Main.css.',
+	'should have the src plugin_dir_url/build/Dashboard/Main.css.',
 	function () {
-		expect( $this->main_style->src() )->toBe( $this->my_plugin_dir_url() . 'build/adminFacing/Main.css' );
+		expect( $this->main_style->src() )->toBe( $this->my_plugin_dir_url() . 'build/Dashboard/Main.css' );
 	}
 );
 
