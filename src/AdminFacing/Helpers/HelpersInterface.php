@@ -8,7 +8,7 @@ namespace SapphireSiteManager\AdminFacing\Helpers;
 interface HelpersInterface {
 
 	/**
-	 * The method that will be called automaticlly within Helpers.
+	 * The method that will be called automatically within Helpers.
 	 *
 	 * @return void
 	 */
