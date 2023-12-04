@@ -11,9 +11,9 @@ import Typography from '@mui/joy/Typography'
 
 // Icons
 import {PlusSquare} from 'react-feather'
+import TodoTable from "./todoComponents/TodoTable";
 
 // Local Components
-import TodoTable from './todoComponents/TodoTable'
 
 export default function Todos() {
 	const [open,] = useState(false)
