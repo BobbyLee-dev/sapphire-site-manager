@@ -148,6 +148,7 @@ export default function SingleTodo(props) {
 					}}/>
 				</Box>
 
+				
 				<Box className={`edit-sapphire-todo ${showTodoEdit}`}>
 					<Box>
 						<Typography>Loading...</Typography>
