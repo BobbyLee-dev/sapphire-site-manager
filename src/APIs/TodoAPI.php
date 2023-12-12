@@ -94,12 +94,12 @@ class TodoAPI {
 				}
 			}
 
+			$status_terms                   = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
+			$priority_terms                 = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_priority' ) );
 			$todo_properties->status        = ! empty( $status_terms ) ? $status_terms[0]->slug : 'not-started';
 			$todo_properties->status_name   = ! empty( $status_terms ) ? $status_terms[0]->name : 'Not Started';
 			$todo_properties->priority      = ! empty( $priority_terms ) ? $priority_terms[0]->slug : 'not-set';
 			$todo_properties->priority_name = ! empty( $priority_terms ) ? $priority_terms[0]->name : 'Not Set';
-			$status_terms                   = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_status' ) );
-			$priority_terms                 = wp_get_post_terms( $todo->ID, array( 'sapphire_todo_priority' ) );
 
 			$todos_array[] = $todo_properties;
 		}
@@ -130,16 +130,35 @@ class TodoAPI {
 	 *
 	 * @param WP_REST_Request $request // Incoming request.
 	 *
-	 * @returns WP_Post|string
+	 * @returns Object
 	 * @uses get_post()
 	 * @since 1.0.
 	 */
-	public static function get_todo( WP_REST_Request $request ): WP_Post|string {
+	public static function get_todo( WP_REST_Request $request ): object {
 		$post_id = $request['id'];
 		if ( ! empty( $post_id ) ) {
-			$todo = get_post( $post_id );
+			$single_todo            = get_post( $post_id );
+			$single_todo_properties = new stdClass();
+			if ( $single_todo instanceof WP_Post ) {
+				$todos_properties = get_object_vars( $single_todo );
+				foreach ( $todos_properties as $property => $value ) {
+					$single_todo_properties->$property = $value;
+				}
+			}
 
-			return $todo;
+			$single_status_terms                         = wp_get_post_terms( $single_todo->ID, array( 'sapphire_todo_status' ) );
+			$single_priority_terms                       = wp_get_post_terms( $single_todo->ID, array( 'sapphire_todo_priority' ) );
+			$single_todo_properties->status              = ! empty( $single_status_terms ) ? $single_status_terms[0]->slug : 'not-started';
+			$single_todo_properties->status_name         = ! empty( $single_status_terms ) ? $single_status_terms[0]->name : 'Not Started';
+			$single_todo_properties->priority            = ! empty( $single_priority_terms ) ? $single_priority_terms[0]->slug : 'not-set';
+			$single_todo_properties->priority_name       = ! empty( $single_priority_terms ) ? $single_priority_terms[0]->name : 'Not Set';
+			$single_todo_properties->author_display_name = get_the_author_meta( 'display_name', $single_todo->post_author );
+			$single_todo_properties->author_avatar_url   = get_avatar( $single_todo->post_author, 100, '', '', array( 'force_default' => true, 'default' => 'mystery' ) );
+
+
+			return $single_todo_properties;
+
+
 		} else {
 			return 'Post not found';
 		}
