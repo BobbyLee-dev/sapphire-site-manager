@@ -11,15 +11,15 @@ import {useQuery} from 'react-query'
 // JoyUI
 import {Divider} from '@mui/joy'
 import Typography from '@mui/joy/Typography';
-
+import Sheet from "@mui/joy/Sheet";
+import Chip from "@mui/joy/Chip";
 import Box from '@mui/joy/Box'
 import Button from '@mui/joy/Button'
 import {Activity, ArrowLeft, BarChart2, Check, Clock, Coffee, Feather, HelpCircle, PlusSquare, Shield, Truck} from 'react-feather'
 
 // Lodash
 import {isEmpty} from 'lodash'
-import Sheet from "@mui/joy/Sheet";
-import Chip from "@mui/joy/Chip";
+
 
 const EditToDoIframe = memo(({src}) => (
 	<iframe src={src}/>
@@ -145,7 +145,6 @@ export default function SingleTodo(props) {
 				<Sheet
 					variant="outlined"
 					sx={{
-						minHeight: 500,
 						borderRadius: 'sm',
 						p: 2,
 						mb: 3,
@@ -162,11 +161,20 @@ export default function SingleTodo(props) {
 					>
 
 						<Box>
-							<Typography fontWeight="xl" level="title-xl" mb={1}>
-								Created by: Alex Jonnold lol
+							<Typography fontWeight="xl" level="body1" mb={1}>
+								Created by:
 							</Typography>
 							<Chip size="sm" variant="soft" color="primary">
-								11/05/2023
+								Alex Jonnold lol
+							</Chip>
+						</Box>
+
+						<Box>
+							<Typography fontWeight="xl" level="body1" mb={1}>
+								Created On: 11/03/23
+							</Typography>
+							<Chip size="sm" variant="soft" color="primary">
+								Last Update: 11/05/23
 							</Chip>
 						</Box>
 
