@@ -2467,356 +2467,6 @@ var weakMemoize = function weakMemoize(func) {
 
 /***/ }),
 
-/***/ "./node_modules/@mui/base/FocusTrap/FocusTrap.js":
-/*!*******************************************************!*\
-  !*** ./node_modules/@mui/base/FocusTrap/FocusTrap.js ***!
-  \*******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/useForkRef.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/ownerDocument.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/elementAcceptingRef.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/exactProp.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-/* eslint-disable consistent-return, jsx-a11y/no-noninteractive-tabindex */
-
-
-
-
-
-// Inspired by https://github.com/focus-trap/tabbable
-const candidatesSelector = ['input', 'select', 'textarea', 'a[href]', 'button', '[tabindex]', 'audio[controls]', 'video[controls]', '[contenteditable]:not([contenteditable="false"])'].join(',');
-function getTabIndex(node) {
-  const tabindexAttr = parseInt(node.getAttribute('tabindex') || '', 10);
-  if (!Number.isNaN(tabindexAttr)) {
-    return tabindexAttr;
-  }
-
-  // Browsers do not return `tabIndex` correctly for contentEditable nodes;
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=661108&q=contenteditable%20tabindex&can=2
-  // so if they don't have a tabindex attribute specifically set, assume it's 0.
-  // in Chrome, <details/>, <audio controls/> and <video controls/> elements get a default
-  //  `tabIndex` of -1 when the 'tabindex' attribute isn't specified in the DOM,
-  //  yet they are still part of the regular tab order; in FF, they get a default
-  //  `tabIndex` of 0; since Chrome still puts those elements in the regular tab
-  //  order, consider their tab index to be 0.
-  if (node.contentEditable === 'true' || (node.nodeName === 'AUDIO' || node.nodeName === 'VIDEO' || node.nodeName === 'DETAILS') && node.getAttribute('tabindex') === null) {
-    return 0;
-  }
-  return node.tabIndex;
-}
-function isNonTabbableRadio(node) {
-  if (node.tagName !== 'INPUT' || node.type !== 'radio') {
-    return false;
-  }
-  if (!node.name) {
-    return false;
-  }
-  const getRadio = selector => node.ownerDocument.querySelector(`input[type="radio"]${selector}`);
-  let roving = getRadio(`[name="${node.name}"]:checked`);
-  if (!roving) {
-    roving = getRadio(`[name="${node.name}"]`);
-  }
-  return roving !== node;
-}
-function isNodeMatchingSelectorFocusable(node) {
-  if (node.disabled || node.tagName === 'INPUT' && node.type === 'hidden' || isNonTabbableRadio(node)) {
-    return false;
-  }
-  return true;
-}
-function defaultGetTabbable(root) {
-  const regularTabNodes = [];
-  const orderedTabNodes = [];
-  Array.from(root.querySelectorAll(candidatesSelector)).forEach((node, i) => {
-    const nodeTabIndex = getTabIndex(node);
-    if (nodeTabIndex === -1 || !isNodeMatchingSelectorFocusable(node)) {
-      return;
-    }
-    if (nodeTabIndex === 0) {
-      regularTabNodes.push(node);
-    } else {
-      orderedTabNodes.push({
-        documentOrder: i,
-        tabIndex: nodeTabIndex,
-        node: node
-      });
-    }
-  });
-  return orderedTabNodes.sort((a, b) => a.tabIndex === b.tabIndex ? a.documentOrder - b.documentOrder : a.tabIndex - b.tabIndex).map(a => a.node).concat(regularTabNodes);
-}
-function defaultIsEnabled() {
-  return true;
-}
-
-/**
- * Utility component that locks focus inside the component.
- *
- * Demos:
- *
- * - [Focus Trap](https://mui.com/base/react-focus-trap/)
- *
- * API:
- *
- * - [FocusTrap API](https://mui.com/base/react-focus-trap/components-api/#focus-trap)
- */
-function FocusTrap(props) {
-  const {
-    children,
-    disableAutoFocus = false,
-    disableEnforceFocus = false,
-    disableRestoreFocus = false,
-    getTabbable = defaultGetTabbable,
-    isEnabled = defaultIsEnabled,
-    open
-  } = props;
-  const ignoreNextEnforceFocus = react__WEBPACK_IMPORTED_MODULE_0__.useRef(false);
-  const sentinelStart = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  const sentinelEnd = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  const nodeToRestore = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  const reactFocusEventTarget = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  // This variable is useful when disableAutoFocus is true.
-  // It waits for the active element to move into the component to activate.
-  const activated = react__WEBPACK_IMPORTED_MODULE_0__.useRef(false);
-  const rootRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  // @ts-expect-error TODO upstream fix
-  const handleRef = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_2__["default"])(children.ref, rootRef);
-  const lastKeydown = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-    // We might render an empty child.
-    if (!open || !rootRef.current) {
-      return;
-    }
-    activated.current = !disableAutoFocus;
-  }, [disableAutoFocus, open]);
-  react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-    // We might render an empty child.
-    if (!open || !rootRef.current) {
-      return;
-    }
-    const doc = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(rootRef.current);
-    if (!rootRef.current.contains(doc.activeElement)) {
-      if (!rootRef.current.hasAttribute('tabIndex')) {
-        if (true) {
-          console.error(['MUI: The modal content node does not accept focus.', 'For the benefit of assistive technologies, ' + 'the tabIndex of the node is being set to "-1".'].join('\n'));
-        }
-        rootRef.current.setAttribute('tabIndex', '-1');
-      }
-      if (activated.current) {
-        rootRef.current.focus();
-      }
-    }
-    return () => {
-      // restoreLastFocus()
-      if (!disableRestoreFocus) {
-        // In IE11 it is possible for document.activeElement to be null resulting
-        // in nodeToRestore.current being null.
-        // Not all elements in IE11 have a focus method.
-        // Once IE11 support is dropped the focus() call can be unconditional.
-        if (nodeToRestore.current && nodeToRestore.current.focus) {
-          ignoreNextEnforceFocus.current = true;
-          nodeToRestore.current.focus();
-        }
-        nodeToRestore.current = null;
-      }
-    };
-    // Missing `disableRestoreFocus` which is fine.
-    // We don't support changing that prop on an open FocusTrap
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-  react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-    // We might render an empty child.
-    if (!open || !rootRef.current) {
-      return;
-    }
-    const doc = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(rootRef.current);
-    const contain = nativeEvent => {
-      const {
-        current: rootElement
-      } = rootRef;
-
-      // Cleanup functions are executed lazily in React 17.
-      // Contain can be called between the component being unmounted and its cleanup function being run.
-      if (rootElement === null) {
-        return;
-      }
-      if (!doc.hasFocus() || disableEnforceFocus || !isEnabled() || ignoreNextEnforceFocus.current) {
-        ignoreNextEnforceFocus.current = false;
-        return;
-      }
-      if (!rootElement.contains(doc.activeElement)) {
-        // if the focus event is not coming from inside the children's react tree, reset the refs
-        if (nativeEvent && reactFocusEventTarget.current !== nativeEvent.target || doc.activeElement !== reactFocusEventTarget.current) {
-          reactFocusEventTarget.current = null;
-        } else if (reactFocusEventTarget.current !== null) {
-          return;
-        }
-        if (!activated.current) {
-          return;
-        }
-        let tabbable = [];
-        if (doc.activeElement === sentinelStart.current || doc.activeElement === sentinelEnd.current) {
-          tabbable = getTabbable(rootRef.current);
-        }
-        if (tabbable.length > 0) {
-          var _lastKeydown$current, _lastKeydown$current2;
-          const isShiftTab = Boolean(((_lastKeydown$current = lastKeydown.current) == null ? void 0 : _lastKeydown$current.shiftKey) && ((_lastKeydown$current2 = lastKeydown.current) == null ? void 0 : _lastKeydown$current2.key) === 'Tab');
-          const focusNext = tabbable[0];
-          const focusPrevious = tabbable[tabbable.length - 1];
-          if (typeof focusNext !== 'string' && typeof focusPrevious !== 'string') {
-            if (isShiftTab) {
-              focusPrevious.focus();
-            } else {
-              focusNext.focus();
-            }
-          }
-        } else {
-          rootElement.focus();
-        }
-      }
-    };
-    const loopFocus = nativeEvent => {
-      lastKeydown.current = nativeEvent;
-      if (disableEnforceFocus || !isEnabled() || nativeEvent.key !== 'Tab') {
-        return;
-      }
-
-      // Make sure the next tab starts from the right place.
-      // doc.activeElement refers to the origin.
-      if (doc.activeElement === rootRef.current && nativeEvent.shiftKey) {
-        // We need to ignore the next contain as
-        // it will try to move the focus back to the rootRef element.
-        ignoreNextEnforceFocus.current = true;
-        if (sentinelEnd.current) {
-          sentinelEnd.current.focus();
-        }
-      }
-    };
-    doc.addEventListener('focusin', contain);
-    doc.addEventListener('keydown', loopFocus, true);
-
-    // With Edge, Safari and Firefox, no focus related events are fired when the focused area stops being a focused area.
-    // e.g. https://bugzilla.mozilla.org/show_bug.cgi?id=559561.
-    // Instead, we can look if the active element was restored on the BODY element.
-    //
-    // The whatwg spec defines how the browser should behave but does not explicitly mention any events:
-    // https://html.spec.whatwg.org/multipage/interaction.html#focus-fixup-rule.
-    const interval = setInterval(() => {
-      if (doc.activeElement && doc.activeElement.tagName === 'BODY') {
-        contain(null);
-      }
-    }, 50);
-    return () => {
-      clearInterval(interval);
-      doc.removeEventListener('focusin', contain);
-      doc.removeEventListener('keydown', loopFocus, true);
-    };
-  }, [disableAutoFocus, disableEnforceFocus, disableRestoreFocus, isEnabled, open, getTabbable]);
-  const onFocus = event => {
-    if (nodeToRestore.current === null) {
-      nodeToRestore.current = event.relatedTarget;
-    }
-    activated.current = true;
-    reactFocusEventTarget.current = event.target;
-    const childrenPropsHandler = children.props.onFocus;
-    if (childrenPropsHandler) {
-      childrenPropsHandler(event);
-    }
-  };
-  const handleFocusSentinel = event => {
-    if (nodeToRestore.current === null) {
-      nodeToRestore.current = event.relatedTarget;
-    }
-    activated.current = true;
-  };
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
-    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-      tabIndex: open ? 0 : -1,
-      onFocus: handleFocusSentinel,
-      ref: sentinelStart,
-      "data-testid": "sentinelStart"
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cloneElement(children, {
-      ref: handleRef,
-      onFocus
-    }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("div", {
-      tabIndex: open ? 0 : -1,
-      onFocus: handleFocusSentinel,
-      ref: sentinelEnd,
-      "data-testid": "sentinelEnd"
-    })]
-  });
-}
- true ? FocusTrap.propTypes /* remove-proptypes */ = {
-  // ----------------------------- Warning --------------------------------
-  // | These PropTypes are generated from the TypeScript type definitions |
-  // |     To update them edit TypeScript types and run "yarn proptypes"  |
-  // ----------------------------------------------------------------------
-  /**
-   * A single child content element.
-   */
-  children: _mui_utils__WEBPACK_IMPORTED_MODULE_4__["default"],
-  /**
-   * If `true`, the focus trap will not automatically shift focus to itself when it opens, and
-   * replace it to the last focused element when it closes.
-   * This also works correctly with any focus trap children that have the `disableAutoFocus` prop.
-   *
-   * Generally this should never be set to `true` as it makes the focus trap less
-   * accessible to assistive technologies, like screen readers.
-   * @default false
-   */
-  disableAutoFocus: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().bool),
-  /**
-   * If `true`, the focus trap will not prevent focus from leaving the focus trap while open.
-   *
-   * Generally this should never be set to `true` as it makes the focus trap less
-   * accessible to assistive technologies, like screen readers.
-   * @default false
-   */
-  disableEnforceFocus: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().bool),
-  /**
-   * If `true`, the focus trap will not restore focus to previously focused element once
-   * focus trap is hidden or unmounted.
-   * @default false
-   */
-  disableRestoreFocus: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().bool),
-  /**
-   * Returns an array of ordered tabbable nodes (i.e. in tab order) within the root.
-   * For instance, you can provide the "tabbable" npm dependency.
-   * @param {HTMLElement} root
-   */
-  getTabbable: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().func),
-  /**
-   * This prop extends the `open` prop.
-   * It allows to toggle the open state without having to wait for a rerender when changing the `open` prop.
-   * This prop should be memoized.
-   * It can be used to support multiple focus trap mounted at the same time.
-   * @default function defaultIsEnabled(): boolean {
-   *   return true;
-   * }
-   */
-  isEnabled: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().func),
-  /**
-   * If `true`, focus is locked.
-   */
-  open: (prop_types__WEBPACK_IMPORTED_MODULE_5___default().bool.isRequired)
-} : 0;
-if (true) {
-  // eslint-disable-next-line
-  FocusTrap['propTypes' + ''] = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_6__["default"])(FocusTrap.propTypes);
-}
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (FocusTrap);
-
-/***/ }),
-
 /***/ "./node_modules/@mui/base/FormControl/FormControlContext.js":
 /*!******************************************************************!*\
   !*** ./node_modules/@mui/base/FormControl/FormControlContext.js ***!
@@ -2870,235 +2520,6 @@ __webpack_require__.r(__webpack_exports__);
  */
 function useFormControlContext() {
   return react__WEBPACK_IMPORTED_MODULE_0__.useContext(_FormControlContext__WEBPACK_IMPORTED_MODULE_1__["default"]);
-}
-
-/***/ }),
-
-/***/ "./node_modules/@mui/base/Modal/ModalManager.js":
-/*!******************************************************!*\
-  !*** ./node_modules/@mui/base/Modal/ModalManager.js ***!
-  \******************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ariaHidden: () => (/* binding */ ariaHidden),
-/* harmony export */   "default": () => (/* binding */ ModalManager)
-/* harmony export */ });
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/ownerDocument.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/ownerWindow.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/getScrollbarSize.js");
-
-// Is a vertical scrollbar displayed?
-function isOverflowing(container) {
-  const doc = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_0__["default"])(container);
-  if (doc.body === container) {
-    return (0,_mui_utils__WEBPACK_IMPORTED_MODULE_1__["default"])(container).innerWidth > doc.documentElement.clientWidth;
-  }
-  return container.scrollHeight > container.clientHeight;
-}
-function ariaHidden(element, show) {
-  if (show) {
-    element.setAttribute('aria-hidden', 'true');
-  } else {
-    element.removeAttribute('aria-hidden');
-  }
-}
-function getPaddingRight(element) {
-  return parseInt((0,_mui_utils__WEBPACK_IMPORTED_MODULE_1__["default"])(element).getComputedStyle(element).paddingRight, 10) || 0;
-}
-function isAriaHiddenForbiddenOnElement(element) {
-  // The forbidden HTML tags are the ones from ARIA specification that
-  // can be children of body and can't have aria-hidden attribute.
-  // cf. https://www.w3.org/TR/html-aria/#docconformance
-  const forbiddenTagNames = ['TEMPLATE', 'SCRIPT', 'STYLE', 'LINK', 'MAP', 'META', 'NOSCRIPT', 'PICTURE', 'COL', 'COLGROUP', 'PARAM', 'SLOT', 'SOURCE', 'TRACK'];
-  const isForbiddenTagName = forbiddenTagNames.indexOf(element.tagName) !== -1;
-  const isInputHidden = element.tagName === 'INPUT' && element.getAttribute('type') === 'hidden';
-  return isForbiddenTagName || isInputHidden;
-}
-function ariaHiddenSiblings(container, mountElement, currentElement, elementsToExclude, show) {
-  const blacklist = [mountElement, currentElement, ...elementsToExclude];
-  [].forEach.call(container.children, element => {
-    const isNotExcludedElement = blacklist.indexOf(element) === -1;
-    const isNotForbiddenElement = !isAriaHiddenForbiddenOnElement(element);
-    if (isNotExcludedElement && isNotForbiddenElement) {
-      ariaHidden(element, show);
-    }
-  });
-}
-function findIndexOf(items, callback) {
-  let idx = -1;
-  items.some((item, index) => {
-    if (callback(item)) {
-      idx = index;
-      return true;
-    }
-    return false;
-  });
-  return idx;
-}
-function handleContainer(containerInfo, props) {
-  const restoreStyle = [];
-  const container = containerInfo.container;
-  if (!props.disableScrollLock) {
-    if (isOverflowing(container)) {
-      // Compute the size before applying overflow hidden to avoid any scroll jumps.
-      const scrollbarSize = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_2__["default"])((0,_mui_utils__WEBPACK_IMPORTED_MODULE_0__["default"])(container));
-      restoreStyle.push({
-        value: container.style.paddingRight,
-        property: 'padding-right',
-        el: container
-      });
-      // Use computed style, here to get the real padding to add our scrollbar width.
-      container.style.paddingRight = `${getPaddingRight(container) + scrollbarSize}px`;
-
-      // .mui-fixed is a global helper.
-      const fixedElements = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_0__["default"])(container).querySelectorAll('.mui-fixed');
-      [].forEach.call(fixedElements, element => {
-        restoreStyle.push({
-          value: element.style.paddingRight,
-          property: 'padding-right',
-          el: element
-        });
-        element.style.paddingRight = `${getPaddingRight(element) + scrollbarSize}px`;
-      });
-    }
-    let scrollContainer;
-    if (container.parentNode instanceof DocumentFragment) {
-      scrollContainer = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_0__["default"])(container).body;
-    } else {
-      // Improve Gatsby support
-      // https://css-tricks.com/snippets/css/force-vertical-scrollbar/
-      const parent = container.parentElement;
-      const containerWindow = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_1__["default"])(container);
-      scrollContainer = (parent == null ? void 0 : parent.nodeName) === 'HTML' && containerWindow.getComputedStyle(parent).overflowY === 'scroll' ? parent : container;
-    }
-
-    // Block the scroll even if no scrollbar is visible to account for mobile keyboard
-    // screensize shrink.
-    restoreStyle.push({
-      value: scrollContainer.style.overflow,
-      property: 'overflow',
-      el: scrollContainer
-    }, {
-      value: scrollContainer.style.overflowX,
-      property: 'overflow-x',
-      el: scrollContainer
-    }, {
-      value: scrollContainer.style.overflowY,
-      property: 'overflow-y',
-      el: scrollContainer
-    });
-    scrollContainer.style.overflow = 'hidden';
-  }
-  const restore = () => {
-    restoreStyle.forEach(({
-      value,
-      el,
-      property
-    }) => {
-      if (value) {
-        el.style.setProperty(property, value);
-      } else {
-        el.style.removeProperty(property);
-      }
-    });
-  };
-  return restore;
-}
-function getHiddenSiblings(container) {
-  const hiddenSiblings = [];
-  [].forEach.call(container.children, element => {
-    if (element.getAttribute('aria-hidden') === 'true') {
-      hiddenSiblings.push(element);
-    }
-  });
-  return hiddenSiblings;
-}
-/**
- * @ignore - do not document.
- *
- * Proper state management for containers and the modals in those containers.
- * Simplified, but inspired by react-overlay's ModalManager class.
- * Used by the Modal to ensure proper styling of containers.
- */
-class ModalManager {
-  constructor() {
-    this.modals = [];
-    this.containers = [];
-  }
-  add(modal, container) {
-    let modalIndex = this.modals.indexOf(modal);
-    if (modalIndex !== -1) {
-      return modalIndex;
-    }
-    modalIndex = this.modals.length;
-    this.modals.push(modal);
-
-    // If the modal we are adding is already in the DOM.
-    if (modal.modalRef) {
-      ariaHidden(modal.modalRef, false);
-    }
-    const hiddenSiblings = getHiddenSiblings(container);
-    ariaHiddenSiblings(container, modal.mount, modal.modalRef, hiddenSiblings, true);
-    const containerIndex = findIndexOf(this.containers, item => item.container === container);
-    if (containerIndex !== -1) {
-      this.containers[containerIndex].modals.push(modal);
-      return modalIndex;
-    }
-    this.containers.push({
-      modals: [modal],
-      container,
-      restore: null,
-      hiddenSiblings
-    });
-    return modalIndex;
-  }
-  mount(modal, props) {
-    const containerIndex = findIndexOf(this.containers, item => item.modals.indexOf(modal) !== -1);
-    const containerInfo = this.containers[containerIndex];
-    if (!containerInfo.restore) {
-      containerInfo.restore = handleContainer(containerInfo, props);
-    }
-  }
-  remove(modal, ariaHiddenState = true) {
-    const modalIndex = this.modals.indexOf(modal);
-    if (modalIndex === -1) {
-      return modalIndex;
-    }
-    const containerIndex = findIndexOf(this.containers, item => item.modals.indexOf(modal) !== -1);
-    const containerInfo = this.containers[containerIndex];
-    containerInfo.modals.splice(containerInfo.modals.indexOf(modal), 1);
-    this.modals.splice(modalIndex, 1);
-
-    // If that was the last modal in a container, clean up the container.
-    if (containerInfo.modals.length === 0) {
-      // The modal might be closed before it had the chance to be mounted in the DOM.
-      if (containerInfo.restore) {
-        containerInfo.restore();
-      }
-      if (modal.modalRef) {
-        // In case the modal wasn't in the DOM yet.
-        ariaHidden(modal.modalRef, ariaHiddenState);
-      }
-      ariaHiddenSiblings(containerInfo.container, modal.mount, modal.modalRef, containerInfo.hiddenSiblings, false);
-      this.containers.splice(containerIndex, 1);
-    } else {
-      // Otherwise make sure the next top modal is visible to a screen reader.
-      const nextTop = containerInfo.modals[containerInfo.modals.length - 1];
-      // as soon as a modal is adding its modalRef is undefined. it can't set
-      // aria-hidden because the dom element doesn't exist either
-      // when modal was unmounted before modalRef gets null
-      if (nextTop.modalRef) {
-        ariaHidden(nextTop.modalRef, false);
-      }
-    }
-    return modalIndex;
-  }
-  isTopModal(modal) {
-    return this.modals.length > 0 && this.modals[this.modals.length - 1] === modal;
-  }
 }
 
 /***/ }),
@@ -11108,1043 +10529,6 @@ const ListSubheaderDispatch = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cr
 
 /***/ }),
 
-/***/ "./node_modules/@mui/joy/Modal/CloseModalContext.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@mui/joy/Modal/CloseModalContext.js ***!
-  \**********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-const CloseModalContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createContext(undefined);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CloseModalContext);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/Modal/Modal.js":
-/*!**********************************************!*\
-  !*** ./node_modules/@mui/joy/Modal/Modal.js ***!
-  \**********************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/useForkRef.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/ownerDocument.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/useEventCallback.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/elementAcceptingRef.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/HTMLElementType.js");
-/* harmony import */ var _mui_base_composeClasses__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @mui/base/composeClasses */ "./node_modules/@mui/utils/esm/composeClasses/composeClasses.js");
-/* harmony import */ var _mui_base_Portal__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/base/Portal */ "./node_modules/@mui/base/Portal/Portal.js");
-/* harmony import */ var _mui_base_FocusTrap__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @mui/base/FocusTrap */ "./node_modules/@mui/base/FocusTrap/FocusTrap.js");
-/* harmony import */ var _mui_base_Modal__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/base/Modal */ "./node_modules/@mui/base/Modal/ModalManager.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/styled.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/useThemeProps.js");
-/* harmony import */ var _utils_useSlot__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utils/useSlot */ "./node_modules/@mui/joy/utils/useSlot.js");
-/* harmony import */ var _modalClasses__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./modalClasses */ "./node_modules/@mui/joy/Modal/modalClasses.js");
-/* harmony import */ var _CloseModalContext__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./CloseModalContext */ "./node_modules/@mui/joy/Modal/CloseModalContext.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-
-
-
-
-
-
-
-
-
-
-
-
-
-function ariaHidden(element, show) {
-  if (show) {
-    element.setAttribute('aria-hidden', 'true');
-  } else {
-    element.removeAttribute('aria-hidden');
-  }
-}
-const useUtilityClasses = ownerState => {
-  const {
-    open
-  } = ownerState;
-  const slots = {
-    root: ['root', !open && 'hidden'],
-    backdrop: ['backdrop']
-  };
-  return (0,_mui_base_composeClasses__WEBPACK_IMPORTED_MODULE_2__["default"])(slots, _modalClasses__WEBPACK_IMPORTED_MODULE_3__.getModalUtilityClass, {});
-};
-function getContainer(container) {
-  return typeof container === 'function' ? container() : container;
-}
-
-// A modal manager used to track and manage the state of open Modals.
-// Modals don't open on the server so this won't conflict with concurrent requests.
-const manager = new _mui_base_Modal__WEBPACK_IMPORTED_MODULE_4__["default"]();
-const ModalRoot = (0,_styles__WEBPACK_IMPORTED_MODULE_5__["default"])('div', {
-  name: 'JoyModal',
-  slot: 'Root',
-  overridesResolver: (props, styles) => styles.root
-})(({
-  ownerState,
-  theme
-}) => ({
-  position: 'fixed',
-  zIndex: theme.vars.zIndex.modal,
-  right: 0,
-  bottom: 0,
-  top: 0,
-  left: 0,
-  ...(!ownerState.open && {
-    visibility: 'hidden'
-  })
-}));
-const ModalBackdrop = (0,_styles__WEBPACK_IMPORTED_MODULE_5__["default"])('div', {
-  name: 'JoyModal',
-  slot: 'Backdrop',
-  overridesResolver: (props, styles) => styles.backdrop
-})(({
-  theme,
-  ownerState
-}) => ({
-  zIndex: -1,
-  position: 'fixed',
-  right: 0,
-  bottom: 0,
-  top: 0,
-  left: 0,
-  backgroundColor: theme.vars.palette.background.backdrop,
-  WebkitTapHighlightColor: 'transparent',
-  ...(ownerState.open && {
-    backdropFilter: 'blur(8px)'
-  })
-}));
-/**
- *
- * Demos:
- *
- * - [Modal](https://mui.com/joy-ui/react-modal/)
- *
- * API:
- *
- * - [Modal API](https://mui.com/joy-ui/api/modal/)
- */
-const Modal = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(function ModalU(inProps, ref) {
-  const props = (0,_styles__WEBPACK_IMPORTED_MODULE_6__["default"])({
-    props: inProps,
-    name: 'JoyModal'
-  });
-  const {
-    children,
-    container,
-    disableAutoFocus = false,
-    disableEnforceFocus = false,
-    disableEscapeKeyDown = false,
-    disablePortal = false,
-    disableRestoreFocus = false,
-    disableScrollLock = false,
-    hideBackdrop = false,
-    keepMounted = false,
-    onClose,
-    onKeyDown,
-    open,
-    component,
-    slots = {},
-    slotProps = {},
-    ...other
-  } = props;
-
-  // @ts-ignore internal logic
-  const modal = react__WEBPACK_IMPORTED_MODULE_0__.useRef({});
-  const mountNodeRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  const modalRef = react__WEBPACK_IMPORTED_MODULE_0__.useRef(null);
-  const handleRef = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_7__["default"])(modalRef, ref);
-  let ariaHiddenProp = true;
-  if (props['aria-hidden'] === 'false' || typeof props['aria-hidden'] === 'boolean' && !props['aria-hidden']) {
-    ariaHiddenProp = false;
-  }
-  const getDoc = () => (0,_mui_utils__WEBPACK_IMPORTED_MODULE_8__["default"])(mountNodeRef.current);
-  const getModal = () => {
-    modal.current.modalRef = modalRef.current;
-    modal.current.mount = mountNodeRef.current;
-    return modal.current;
-  };
-  const handleMounted = () => {
-    manager.mount(getModal(), {
-      disableScrollLock
-    });
-
-    // Fix a bug on Chrome where the scroll isn't initially 0.
-    if (modalRef.current) {
-      modalRef.current.scrollTop = 0;
-    }
-  };
-  const handleOpen = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_9__["default"])(() => {
-    const resolvedContainer = getContainer(container) || getDoc().body;
-    manager.add(getModal(), resolvedContainer);
-
-    // The element was already mounted.
-    if (modalRef.current) {
-      handleMounted();
-    }
-  });
-  const isTopModal = () => manager.isTopModal(getModal());
-  const handlePortalRef = (0,_mui_utils__WEBPACK_IMPORTED_MODULE_9__["default"])(node => {
-    mountNodeRef.current = node;
-    if (!node) {
-      return;
-    }
-    if (open && isTopModal()) {
-      handleMounted();
-    } else if (modalRef.current) {
-      ariaHidden(modalRef.current, ariaHiddenProp);
-    }
-  });
-  const handleClose = react__WEBPACK_IMPORTED_MODULE_0__.useCallback(() => {
-    manager.remove(getModal(), ariaHiddenProp);
-  }, [ariaHiddenProp]);
-  react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-    return () => {
-      handleClose();
-    };
-  }, [handleClose]);
-  react__WEBPACK_IMPORTED_MODULE_0__.useEffect(() => {
-    if (open) {
-      handleOpen();
-    } else {
-      handleClose();
-    }
-  }, [open, handleClose, handleOpen]);
-  const ownerState = {
-    ...props,
-    disableAutoFocus,
-    disableEnforceFocus,
-    disableEscapeKeyDown,
-    disablePortal,
-    disableRestoreFocus,
-    disableScrollLock,
-    hideBackdrop,
-    keepMounted
-  };
-  const classes = useUtilityClasses(ownerState);
-  const externalForwardedProps = {
-    ...other,
-    component,
-    slots,
-    slotProps
-  };
-  const handleBackdropClick = event => {
-    if (event.target !== event.currentTarget) {
-      return;
-    }
-    if (onClose) {
-      onClose(event, 'backdropClick');
-    }
-  };
-  const handleKeyDown = event => {
-    if (onKeyDown) {
-      onKeyDown(event);
-    }
-
-    // The handler doesn't take event.defaultPrevented into account:
-    //
-    // event.preventDefault() is meant to stop default behaviors like
-    // clicking a checkbox to check it, hitting a button to submit a form,
-    // and hitting left arrow to move the cursor in a text input etc.
-    // Only special HTML elements have these default behaviors.
-    if (event.key !== 'Escape' || !isTopModal()) {
-      return;
-    }
-    if (!disableEscapeKeyDown) {
-      // Swallow the event, in case someone is listening for the escape key on the body.
-      event.stopPropagation();
-      if (onClose) {
-        onClose(event, 'escapeKeyDown');
-      }
-    }
-  };
-  const [SlotRoot, rootProps] = (0,_utils_useSlot__WEBPACK_IMPORTED_MODULE_10__["default"])('root', {
-    additionalProps: {
-      role: 'presentation',
-      onKeyDown: handleKeyDown
-    },
-    ref: handleRef,
-    className: classes.root,
-    elementType: ModalRoot,
-    externalForwardedProps,
-    ownerState
-  });
-  const [SlotBackdrop, backdropProps] = (0,_utils_useSlot__WEBPACK_IMPORTED_MODULE_10__["default"])('backdrop', {
-    additionalProps: {
-      'aria-hidden': true,
-      onClick: handleBackdropClick,
-      open
-    },
-    className: classes.backdrop,
-    elementType: ModalBackdrop,
-    externalForwardedProps,
-    ownerState
-  });
-  if (!keepMounted && !open) {
-    return null;
-  }
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_CloseModalContext__WEBPACK_IMPORTED_MODULE_11__["default"].Provider, {
-    value: onClose,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_mui_base_Portal__WEBPACK_IMPORTED_MODULE_12__["default"], {
-      ref: handlePortalRef,
-      container: container,
-      disablePortal: disablePortal,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsxs)(SlotRoot, {
-        ...rootProps,
-        children: [!hideBackdrop ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(SlotBackdrop, {
-          ...backdropProps
-        }) : null, /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_mui_base_FocusTrap__WEBPACK_IMPORTED_MODULE_13__["default"], {
-          disableEnforceFocus: disableEnforceFocus,
-          disableAutoFocus: disableAutoFocus,
-          disableRestoreFocus: disableRestoreFocus,
-          isEnabled: isTopModal,
-          open: open,
-          children: react__WEBPACK_IMPORTED_MODULE_0__.Children.only(children) && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cloneElement(children, {
-            ...(children.props.tabIndex === undefined && {
-              tabIndex: -1
-            })
-          })
-        })]
-      })
-    })
-  });
-});
- true ? Modal.propTypes /* remove-proptypes */ = {
-  // ----------------------------- Warning --------------------------------
-  // | These PropTypes are generated from the TypeScript type definitions |
-  // |     To update them edit TypeScript types and run "yarn proptypes"  |
-  // ----------------------------------------------------------------------
-  /**
-   * A single child content element.
-   */
-  children: _mui_utils__WEBPACK_IMPORTED_MODULE_14__["default"].isRequired,
-  /**
-   * The component used for the root node.
-   * Either a string to use a HTML element or a component.
-   */
-  component: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().elementType),
-  /**
-   * An HTML element or function that returns one.
-   * The `container` will have the portal children appended to it.
-   *
-   * By default, it uses the body of the top-level document object,
-   * so it's simply `document.body` most of the time.
-   */
-  container: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([_mui_utils__WEBPACK_IMPORTED_MODULE_16__["default"], (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func)]),
-  /**
-   * If `true`, the modal will not automatically shift focus to itself when it opens, and
-   * replace it to the last focused element when it closes.
-   * This also works correctly with any modal children that have the `disableAutoFocus` prop.
-   *
-   * Generally this should never be set to `true` as it makes the modal less
-   * accessible to assistive technologies, like screen readers.
-   * @default false
-   */
-  disableAutoFocus: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * If `true`, the modal will not prevent focus from leaving the modal while open.
-   *
-   * Generally this should never be set to `true` as it makes the modal less
-   * accessible to assistive technologies, like screen readers.
-   * @default false
-   */
-  disableEnforceFocus: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * If `true`, hitting escape will not fire the `onClose` callback.
-   * @default false
-   */
-  disableEscapeKeyDown: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * The `children` will be under the DOM hierarchy of the parent component.
-   * @default false
-   */
-  disablePortal: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * If `true`, the modal will not restore focus to previously focused element once
-   * modal is hidden or unmounted.
-   * @default false
-   */
-  disableRestoreFocus: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * Disable the scroll lock behavior.
-   * @default false
-   */
-  disableScrollLock: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * If `true`, the backdrop is not rendered.
-   * @default false
-   */
-  hideBackdrop: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * Always keep the children in the DOM.
-   * This prop can be useful in SEO situation or
-   * when you want to maximize the responsiveness of the Modal.
-   * @default false
-   */
-  keepMounted: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool),
-  /**
-   * Callback fired when the component requests to be closed.
-   * The `reason` parameter can optionally be used to control the response to `onClose`.
-   *
-   * @param {object} event The event source of the callback.
-   * @param {string} reason Can be: `"escapeKeyDown"`, `"backdropClick"`, `"closeClick"`.
-   */
-  onClose: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func),
-  /**
-   * @ignore
-   */
-  onKeyDown: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func),
-  /**
-   * If `true`, the component is shown.
-   */
-  open: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool.isRequired),
-  /**
-   * The props used for each slot inside.
-   * @default {}
-   */
-  slotProps: prop_types__WEBPACK_IMPORTED_MODULE_15___default().shape({
-    backdrop: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object)]),
-    root: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object)])
-  }),
-  /**
-   * The components used for each slot inside.
-   * @default {}
-   */
-  slots: prop_types__WEBPACK_IMPORTED_MODULE_15___default().shape({
-    backdrop: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().elementType),
-    root: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().elementType)
-  }),
-  /**
-   * The system prop that allows defining system overrides as well as additional CSS styles.
-   */
-  sx: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_15___default().arrayOf(prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool)])), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object)])
-} : 0;
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Modal);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/Modal/modalClasses.js":
-/*!*****************************************************!*\
-  !*** ./node_modules/@mui/joy/Modal/modalClasses.js ***!
-  \*****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   getModalUtilityClass: () => (/* binding */ getModalUtilityClass)
-/* harmony export */ });
-/* harmony import */ var _className__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../className */ "./node_modules/@mui/joy/className/index.js");
-
-function getModalUtilityClass(slot) {
-  return (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClass)('MuiModal', slot);
-}
-const modalClasses = (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClasses)('MuiModal', ['root', 'backdrop']);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (modalClasses);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalClose/ModalClose.js":
-/*!********************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalClose/ModalClose.js ***!
-  \********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   ModalCloseRoot: () => (/* binding */ ModalCloseRoot),
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_15___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_15__);
-/* harmony import */ var _mui_base__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @mui/base */ "./node_modules/@mui/utils/esm/composeClasses/composeClasses.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/capitalize.js");
-/* harmony import */ var _mui_base_useButton__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/base/useButton */ "./node_modules/@mui/base/useButton/useButton.js");
-/* harmony import */ var _utils_useSlot__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ../utils/useSlot */ "./node_modules/@mui/joy/utils/useSlot.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/styled.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/useThemeProps.js");
-/* harmony import */ var _styles_ColorInversion__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../styles/ColorInversion */ "./node_modules/@mui/joy/styles/ColorInversion.js");
-/* harmony import */ var _IconButton_IconButton__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../IconButton/IconButton */ "./node_modules/@mui/joy/IconButton/IconButton.js");
-/* harmony import */ var _modalCloseClasses__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modalCloseClasses */ "./node_modules/@mui/joy/ModalClose/modalCloseClasses.js");
-/* harmony import */ var _internal_svg_icons_Close__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ../internal/svg-icons/Close */ "./node_modules/@mui/joy/internal/svg-icons/Close.js");
-/* harmony import */ var _Modal_CloseModalContext__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../Modal/CloseModalContext */ "./node_modules/@mui/joy/Modal/CloseModalContext.js");
-/* harmony import */ var _ModalDialog_ModalDialogSizeContext__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ../ModalDialog/ModalDialogSizeContext */ "./node_modules/@mui/joy/ModalDialog/ModalDialogSizeContext.js");
-/* harmony import */ var _ModalDialog_ModalDialogVariantColorContext__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../ModalDialog/ModalDialogVariantColorContext */ "./node_modules/@mui/joy/ModalDialog/ModalDialogVariantColorContext.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-var _CloseIcon;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const useUtilityClasses = ownerState => {
-  const {
-    variant,
-    color,
-    disabled,
-    focusVisible,
-    size
-  } = ownerState;
-  const slots = {
-    root: ['root', disabled && 'disabled', focusVisible && 'focusVisible', variant && `variant${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_2__["default"])(variant)}`, color && `color${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_2__["default"])(color)}`, size && `size${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_2__["default"])(size)}`]
-  };
-  return (0,_mui_base__WEBPACK_IMPORTED_MODULE_3__["default"])(slots, _modalCloseClasses__WEBPACK_IMPORTED_MODULE_4__.getModalCloseUtilityClass, {});
-};
-const ModalCloseRoot = (0,_styles__WEBPACK_IMPORTED_MODULE_5__["default"])(_IconButton_IconButton__WEBPACK_IMPORTED_MODULE_6__.StyledIconButton, {
-  name: 'JoyModalClose',
-  slot: 'Root',
-  overridesResolver: (props, styles) => styles.root
-})(({
-  ownerState,
-  theme
-}) => {
-  var _theme$variants, _theme$variants2;
-  return {
-    ...(ownerState.size === 'sm' && {
-      '--IconButton-size': '28px'
-    }),
-    ...(ownerState.size === 'md' && {
-      '--IconButton-size': '36px'
-    }),
-    ...(ownerState.size === 'lg' && {
-      '--IconButton-size': '40px'
-    }),
-    position: 'absolute',
-    top: `var(--ModalClose-inset, ${theme.spacing(1)})`,
-    right: `var(--ModalClose-inset, ${theme.spacing(1)})`,
-    borderRadius: `var(--ModalClose-radius, ${theme.vars.radius.sm})`,
-    // for variant without a background, use `tertiary` text color to reduce the importance of the close icon.
-    ...(!((_theme$variants = theme.variants[ownerState.variant]) != null && (_theme$variants2 = _theme$variants[ownerState.color]) != null && _theme$variants2.backgroundColor) && {
-      color: theme.vars.palette.text.secondary
-    })
-  };
-});
-const modalDialogVariantMapping = {
-  plain: 'plain',
-  outlined: 'plain',
-  soft: 'soft',
-  solid: 'solid'
-};
-/**
- *
- * Demos:
- *
- * - [Modal](https://mui.com/joy-ui/react-modal/)
- *
- * API:
- *
- * - [ModalClose API](https://mui.com/joy-ui/api/modal-close/)
- */
-const ModalClose = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(function ModalClose(inProps, ref) {
-  var _ref, _inProps$variant, _modalDialogVariantCo, _ref2, _inProps$size;
-  const props = (0,_styles__WEBPACK_IMPORTED_MODULE_7__["default"])({
-    props: inProps,
-    name: 'JoyModalClose'
-  });
-  const {
-    component = 'button',
-    color: colorProp = 'neutral',
-    variant: variantProp = 'plain',
-    size: sizeProp = 'md',
-    onClick,
-    slots = {},
-    slotProps = {},
-    ...other
-  } = props;
-  const closeModalContext = react__WEBPACK_IMPORTED_MODULE_0__.useContext(_Modal_CloseModalContext__WEBPACK_IMPORTED_MODULE_8__["default"]);
-  const modalDialogVariantColor = react__WEBPACK_IMPORTED_MODULE_0__.useContext(_ModalDialog_ModalDialogVariantColorContext__WEBPACK_IMPORTED_MODULE_9__["default"]);
-  const variant = (_ref = (_inProps$variant = inProps.variant) != null ? _inProps$variant : modalDialogVariantMapping[modalDialogVariantColor == null ? void 0 : modalDialogVariantColor.variant]) != null ? _ref : variantProp;
-  const {
-    getColor
-  } = (0,_styles_ColorInversion__WEBPACK_IMPORTED_MODULE_10__.useColorInversion)(variant);
-  const color = getColor(inProps.color, (_modalDialogVariantCo = modalDialogVariantColor == null ? void 0 : modalDialogVariantColor.color) != null ? _modalDialogVariantCo : colorProp);
-  const modalDialogSize = react__WEBPACK_IMPORTED_MODULE_0__.useContext(_ModalDialog_ModalDialogSizeContext__WEBPACK_IMPORTED_MODULE_11__["default"]);
-  const size = (_ref2 = (_inProps$size = inProps.size) != null ? _inProps$size : modalDialogSize) != null ? _ref2 : sizeProp;
-  const {
-    focusVisible,
-    getRootProps
-  } = (0,_mui_base_useButton__WEBPACK_IMPORTED_MODULE_12__["default"])({
-    ...props,
-    rootRef: ref
-  });
-  const ownerState = {
-    ...props,
-    color,
-    component,
-    variant,
-    size,
-    focusVisible
-  };
-  const classes = useUtilityClasses(ownerState);
-  const [SlotRoot, rootProps] = (0,_utils_useSlot__WEBPACK_IMPORTED_MODULE_13__["default"])('root', {
-    ref,
-    elementType: ModalCloseRoot,
-    getSlotProps: getRootProps,
-    externalForwardedProps: {
-      onClick: event => {
-        closeModalContext == null ? void 0 : closeModalContext(event, 'closeClick');
-        onClick == null ? void 0 : onClick(event);
-      },
-      ...other,
-      component,
-      slots,
-      slotProps
-    },
-    className: classes.root,
-    ownerState
-  });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(SlotRoot, {
-    ...rootProps,
-    children: _CloseIcon || (_CloseIcon = /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)(_internal_svg_icons_Close__WEBPACK_IMPORTED_MODULE_14__["default"], {}))
-  });
-});
- true ? ModalClose.propTypes /* remove-proptypes */ = {
-  // ----------------------------- Warning --------------------------------
-  // | These PropTypes are generated from the TypeScript type definitions |
-  // |     To update them edit TypeScript types and run "yarn proptypes"  |
-  // ----------------------------------------------------------------------
-  /**
-   * @ignore
-   */
-  children: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().node),
-  /**
-   * The color of the component. It supports those theme colors that make sense for this component.
-   * @default 'neutral'
-   */
-  color: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOf(['danger', 'info', 'neutral', 'primary', 'success', 'warning']), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().string)]),
-  /**
-   * The component used for the root node.
-   * Either a string to use a HTML element or a component.
-   */
-  component: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().elementType),
-  /**
-   * @ignore
-   */
-  onClick: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func),
-  /**
-   * The size of the component.
-   * @default 'md'
-   */
-  size: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOf(['sm', 'md', 'lg']), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().string)]),
-  /**
-   * The props used for each slot inside.
-   * @default {}
-   */
-  slotProps: prop_types__WEBPACK_IMPORTED_MODULE_15___default().shape({
-    root: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object)])
-  }),
-  /**
-   * The components used for each slot inside.
-   * @default {}
-   */
-  slots: prop_types__WEBPACK_IMPORTED_MODULE_15___default().shape({
-    root: (prop_types__WEBPACK_IMPORTED_MODULE_15___default().elementType)
-  }),
-  /**
-   * The system prop that allows defining system overrides as well as additional CSS styles.
-   */
-  sx: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_15___default().arrayOf(prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().bool)])), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().object)]),
-  /**
-   * The [global variant](https://mui.com/joy-ui/main-features/global-variants/) to use.
-   * @default 'plain'
-   */
-  variant: prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_15___default().oneOf(['outlined', 'plain', 'soft', 'solid']), (prop_types__WEBPACK_IMPORTED_MODULE_15___default().string)])
-} : 0;
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalClose);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalClose/modalCloseClasses.js":
-/*!***************************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalClose/modalCloseClasses.js ***!
-  \***************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   getModalCloseUtilityClass: () => (/* binding */ getModalCloseUtilityClass)
-/* harmony export */ });
-/* harmony import */ var _className__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../className */ "./node_modules/@mui/joy/className/index.js");
-
-function getModalCloseUtilityClass(slot) {
-  return (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClass)('MuiModalClose', slot);
-}
-const modalCloseClasses = (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClasses)('MuiModalClose', ['root', 'colorPrimary', 'colorNeutral', 'colorDanger', 'colorInfo', 'colorSuccess', 'colorWarning', 'colorContext', 'variantPlain', 'variantOutlined', 'variantSoft', 'variantSolid', 'sizeSm', 'sizeMd', 'sizeLg']);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (modalCloseClasses);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalDialog/ModalDialog.js":
-/*!**********************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalDialog/ModalDialog.js ***!
-  \**********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_14__);
-/* harmony import */ var clsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! clsx */ "./node_modules/clsx/dist/clsx.m.js");
-/* harmony import */ var _mui_base__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/base */ "./node_modules/@mui/utils/esm/composeClasses/composeClasses.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/capitalize.js");
-/* harmony import */ var _mui_utils__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @mui/utils */ "./node_modules/@mui/utils/esm/isMuiElement.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/styled.js");
-/* harmony import */ var _styles__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ../styles */ "./node_modules/@mui/joy/styles/useThemeProps.js");
-/* harmony import */ var _styles_ColorInversion__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ../styles/ColorInversion */ "./node_modules/@mui/joy/styles/ColorInversion.js");
-/* harmony import */ var _Sheet_Sheet__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../Sheet/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
-/* harmony import */ var _modalDialogClasses__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modalDialogClasses */ "./node_modules/@mui/joy/ModalDialog/modalDialogClasses.js");
-/* harmony import */ var _ModalDialogSizeContext__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./ModalDialogSizeContext */ "./node_modules/@mui/joy/ModalDialog/ModalDialogSizeContext.js");
-/* harmony import */ var _ModalDialogVariantColorContext__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./ModalDialogVariantColorContext */ "./node_modules/@mui/joy/ModalDialog/ModalDialogVariantColorContext.js");
-/* harmony import */ var _utils_useSlot__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../utils/useSlot */ "./node_modules/@mui/joy/utils/useSlot.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-
-
-
-
-
-
-
-
-
-
-
-
-
-const useUtilityClasses = ownerState => {
-  const {
-    variant,
-    color,
-    size,
-    layout
-  } = ownerState;
-  const slots = {
-    root: ['root', variant && `variant${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(variant)}`, color && `color${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(color)}`, size && `size${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(size)}`, layout && `layout${(0,_mui_utils__WEBPACK_IMPORTED_MODULE_3__["default"])(layout)}`]
-  };
-  return (0,_mui_base__WEBPACK_IMPORTED_MODULE_4__["default"])(slots, _modalDialogClasses__WEBPACK_IMPORTED_MODULE_5__.getModalDialogUtilityClass, {});
-};
-const ModalDialogRoot = (0,_styles__WEBPACK_IMPORTED_MODULE_6__["default"])(_Sheet_Sheet__WEBPACK_IMPORTED_MODULE_7__.SheetRoot, {
-  name: 'JoyModalDialog',
-  slot: 'Root',
-  overridesResolver: (props, styles) => styles.root
-})(({
-  theme,
-  ownerState
-}) => ({
-  // Divider integration
-  '--Divider-inset': 'calc(-1 * var(--ModalDialog-padding))',
-  '--ModalClose-radius': 'max((var(--ModalDialog-radius) - var(--variant-borderWidth, 0px)) - var(--ModalClose-inset), min(var(--ModalClose-inset) / 2, (var(--ModalDialog-radius) - var(--variant-borderWidth, 0px)) / 2))',
-  ...(ownerState.size === 'sm' && {
-    '--ModalDialog-padding': theme.spacing(2),
-    '--ModalDialog-radius': theme.vars.radius.sm,
-    '--ModalDialog-gap': theme.spacing(0.75),
-    '--ModalDialog-titleOffset': theme.spacing(0.25),
-    '--ModalDialog-descriptionOffset': theme.spacing(0.25),
-    '--ModalClose-inset': theme.spacing(1.25),
-    fontSize: theme.vars.fontSize.sm
-  }),
-  ...(ownerState.size === 'md' && {
-    '--ModalDialog-padding': theme.spacing(2.5),
-    '--ModalDialog-radius': theme.vars.radius.md,
-    '--ModalDialog-gap': theme.spacing(1.5),
-    '--ModalDialog-titleOffset': theme.spacing(0.25),
-    '--ModalDialog-descriptionOffset': theme.spacing(0.75),
-    '--ModalClose-inset': theme.spacing(1.5),
-    fontSize: theme.vars.fontSize.md
-  }),
-  ...(ownerState.size === 'lg' && {
-    '--ModalDialog-padding': theme.spacing(3),
-    '--ModalDialog-radius': theme.vars.radius.md,
-    '--ModalDialog-gap': theme.spacing(2),
-    '--ModalDialog-titleOffset': theme.spacing(0.75),
-    '--ModalDialog-descriptionOffset': theme.spacing(1),
-    '--ModalClose-inset': theme.spacing(1.5),
-    fontSize: theme.vars.fontSize.lg
-  }),
-  boxSizing: 'border-box',
-  boxShadow: theme.shadow.md,
-  borderRadius: 'var(--ModalDialog-radius)',
-  fontFamily: theme.vars.fontFamily.body,
-  lineHeight: theme.vars.lineHeight.md,
-  padding: 'var(--ModalDialog-padding)',
-  minWidth: 'min(calc(100vw - 2 * var(--ModalDialog-padding)), var(--ModalDialog-minWidth, 300px))',
-  outline: 0,
-  position: 'absolute',
-  display: 'flex',
-  flexDirection: 'column',
-  ...(ownerState.layout === 'fullscreen' && {
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    border: 0,
-    borderRadius: 0
-  }),
-  ...(ownerState.layout === 'center' && {
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    maxWidth: 'min(calc(100vw - 2 * var(--ModalDialog-padding)), var(--ModalDialog-maxWidth, 100vw))',
-    maxHeight: 'calc(100% - 2 * var(--ModalDialog-padding))'
-  }),
-  [`& [id="${ownerState['aria-labelledby']}"]`]: {
-    '--Typography-margin': 'calc(-1 * var(--ModalDialog-titleOffset)) 0 var(--ModalDialog-gap) 0',
-    '--Typography-fontSize': '1.125em',
-    [`& + [id="${ownerState['aria-describedby']}"]`]: {
-      '--unstable_ModalDialog-descriptionOffset': 'calc(-1 * var(--ModalDialog-descriptionOffset))'
-    }
-  },
-  [`& [id="${ownerState['aria-describedby']}"]`]: {
-    '--Typography-fontSize': '1em',
-    '--Typography-margin': 'var(--unstable_ModalDialog-descriptionOffset, var(--ModalDialog-gap)) 0 0 0',
-    '&:not(:last-child)': {
-      // create spacing between description and the next element.
-      '--Typography-margin': 'var(--unstable_ModalDialog-descriptionOffset, var(--ModalDialog-gap)) 0 var(--ModalDialog-gap) 0'
-    }
-  }
-}));
-/**
- *
- * Demos:
- *
- * - [Modal](https://mui.com/joy-ui/react-modal/)
- *
- * API:
- *
- * - [ModalDialog API](https://mui.com/joy-ui/api/modal-dialog/)
- */
-const ModalDialog = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.forwardRef(function ModalDialog(inProps, ref) {
-  const props = (0,_styles__WEBPACK_IMPORTED_MODULE_8__["default"])({
-    props: inProps,
-    name: 'JoyModalDialog'
-  });
-  const {
-    className,
-    children,
-    color: colorProp = 'neutral',
-    component = 'div',
-    variant = 'outlined',
-    size = 'md',
-    layout = 'center',
-    slots = {},
-    slotProps = {},
-    ...other
-  } = props;
-  const {
-    getColor
-  } = (0,_styles_ColorInversion__WEBPACK_IMPORTED_MODULE_9__.useColorInversion)(variant);
-  const color = getColor(inProps.color, colorProp);
-  const ownerState = {
-    ...props,
-    color,
-    component,
-    layout,
-    size,
-    variant
-  };
-  const classes = useUtilityClasses(ownerState);
-  const externalForwardedProps = {
-    ...other,
-    component,
-    slots,
-    slotProps
-  };
-  const contextValue = react__WEBPACK_IMPORTED_MODULE_0__.useMemo(() => ({
-    variant,
-    color: color === 'context' ? undefined : color
-  }), [color, variant]);
-  const [SlotRoot, rootProps] = (0,_utils_useSlot__WEBPACK_IMPORTED_MODULE_10__["default"])('root', {
-    ref,
-    className: (0,clsx__WEBPACK_IMPORTED_MODULE_1__["default"])(classes.root, className),
-    elementType: ModalDialogRoot,
-    externalForwardedProps,
-    ownerState,
-    additionalProps: {
-      as: component,
-      role: 'dialog',
-      'aria-modal': 'true'
-    }
-  });
-  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_ModalDialogSizeContext__WEBPACK_IMPORTED_MODULE_11__["default"].Provider, {
-    value: size,
-    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(_ModalDialogVariantColorContext__WEBPACK_IMPORTED_MODULE_12__["default"].Provider, {
-      value: contextValue,
-      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_2__.jsx)(SlotRoot, {
-        ...rootProps,
-        children: react__WEBPACK_IMPORTED_MODULE_0__.Children.map(children, child => {
-          if (! /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.isValidElement(child)) {
-            return child;
-          }
-          if ((0,_mui_utils__WEBPACK_IMPORTED_MODULE_13__["default"])(child, ['Divider'])) {
-            const extraProps = {};
-            extraProps.inset = 'inset' in child.props ? child.props.inset : 'context';
-            return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.cloneElement(child, extraProps);
-          }
-          return child;
-        })
-      })
-    })
-  });
-});
- true ? ModalDialog.propTypes /* remove-proptypes */ = {
-  // ----------------------------- Warning --------------------------------
-  // | These PropTypes are generated from the TypeScript type definitions |
-  // |     To update them edit TypeScript types and run "yarn proptypes"  |
-  // ----------------------------------------------------------------------
-  /**
-   * The content of the component.
-   */
-  children: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().node),
-  /**
-   * @ignore
-   */
-  className: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string),
-  /**
-   * The color of the component. It supports those theme colors that make sense for this component.
-   * @default 'neutral'
-   */
-  color: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOf(['danger', 'info', 'neutral', 'primary', 'success', 'warning']), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string)]),
-  /**
-   * The component used for the root node.
-   * Either a string to use a HTML element or a component.
-   */
-  component: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().elementType),
-  /**
-   * The layout of the dialog
-   * @default 'center'
-   */
-  layout: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOf(['center', 'fullscreen']), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string)]),
-  /**
-   * The size of the component.
-   * @default 'md'
-   */
-  size: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOf(['sm', 'md', 'lg']), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string)]),
-  /**
-   * The props used for each slot inside.
-   * @default {}
-   */
-  slotProps: prop_types__WEBPACK_IMPORTED_MODULE_14___default().shape({
-    root: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_14___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().object)])
-  }),
-  /**
-   * The components used for each slot inside.
-   * @default {}
-   */
-  slots: prop_types__WEBPACK_IMPORTED_MODULE_14___default().shape({
-    root: (prop_types__WEBPACK_IMPORTED_MODULE_14___default().elementType)
-  }),
-  /**
-   * The system prop that allows defining system overrides as well as additional CSS styles.
-   */
-  sx: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_14___default().arrayOf(prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_14___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().object), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().bool)])), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().func), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().object)]),
-  /**
-   * The [global variant](https://mui.com/joy-ui/main-features/global-variants/) to use.
-   * @default 'outlined'
-   */
-  variant: prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOfType([prop_types__WEBPACK_IMPORTED_MODULE_14___default().oneOf(['outlined', 'plain', 'soft', 'solid']), (prop_types__WEBPACK_IMPORTED_MODULE_14___default().string)])
-} : 0;
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalDialog);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalDialog/ModalDialogSizeContext.js":
-/*!*********************************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalDialog/ModalDialogSizeContext.js ***!
-  \*********************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-const ModalDialogSizeContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createContext(undefined);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalDialogSizeContext);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalDialog/ModalDialogVariantColorContext.js":
-/*!*****************************************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalDialog/ModalDialogVariantColorContext.js ***!
-  \*****************************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-
-const ModalDialogVariantColorContext = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0__.createContext(undefined);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalDialogVariantColorContext);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/ModalDialog/modalDialogClasses.js":
-/*!*****************************************************************!*\
-  !*** ./node_modules/@mui/joy/ModalDialog/modalDialogClasses.js ***!
-  \*****************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
-/* harmony export */   getModalDialogUtilityClass: () => (/* binding */ getModalDialogUtilityClass)
-/* harmony export */ });
-/* harmony import */ var _className__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../className */ "./node_modules/@mui/joy/className/index.js");
-
-function getModalDialogUtilityClass(slot) {
-  return (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClass)('MuiModalDialog', slot);
-}
-const modalDialogClasses = (0,_className__WEBPACK_IMPORTED_MODULE_0__.generateUtilityClasses)('MuiModalDialog', ['root', 'colorPrimary', 'colorNeutral', 'colorDanger', 'colorInfo', 'colorSuccess', 'colorWarning', 'colorContext', 'variantPlain', 'variantOutlined', 'variantSoft', 'variantSolid', 'sizeSm', 'sizeMd', 'sizeLg', 'layoutCenter', 'layoutFullscreen']);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (modalDialogClasses);
-
-/***/ }),
-
 /***/ "./node_modules/@mui/joy/Option/Option.js":
 /*!************************************************!*\
   !*** ./node_modules/@mui/joy/Option/Option.js ***!
@@ -14663,34 +13047,6 @@ const colors = {
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (colors);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/joy/internal/svg-icons/Close.js":
-/*!***********************************************************!*\
-  !*** ./node_modules/@mui/joy/internal/svg-icons/Close.js ***!
-  \***********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils_createSvgIcon__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils/createSvgIcon */ "./node_modules/@mui/joy/utils/createSvgIcon.js");
-/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react/jsx-runtime */ "./node_modules/react/jsx-runtime.js");
-
-
-
-/**
- * @ignore - internal component.
- */
-
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ((0,_utils_createSvgIcon__WEBPACK_IMPORTED_MODULE_2__["default"])( /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_1__.jsx)("path", {
-  d: "M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-}), 'Close'));
 
 /***/ }),
 
@@ -20315,65 +18671,6 @@ function deepmerge(target, source, options = {
 
 /***/ }),
 
-/***/ "./node_modules/@mui/utils/esm/elementAcceptingRef.js":
-/*!************************************************************!*\
-  !*** ./node_modules/@mui/utils/esm/elementAcceptingRef.js ***!
-  \************************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _chainPropTypes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./chainPropTypes */ "./node_modules/@mui/utils/esm/chainPropTypes.js");
-
-
-function isClassComponent(elementType) {
-  // elementType.prototype?.isReactComponent
-  const {
-    prototype = {}
-  } = elementType;
-  return Boolean(prototype.isReactComponent);
-}
-function acceptingRef(props, propName, componentName, location, propFullName) {
-  const element = props[propName];
-  const safePropName = propFullName || propName;
-  if (element == null ||
-  // When server-side rendering React doesn't warn either.
-  // This is not an accurate check for SSR.
-  // This is only in place for Emotion compat.
-  // TODO: Revisit once https://github.com/facebook/react/issues/20047 is resolved.
-  typeof window === 'undefined') {
-    return null;
-  }
-  let warningHint;
-  const elementType = element.type;
-  /**
-   * Blacklisting instead of whitelisting
-   *
-   * Blacklisting will miss some components, such as React.Fragment. Those will at least
-   * trigger a warning in React.
-   * We can't whitelist because there is no safe way to detect React.forwardRef
-   * or class components. "Safe" means there's no public API.
-   *
-   */
-  if (typeof elementType === 'function' && !isClassComponent(elementType)) {
-    warningHint = 'Did you accidentally use a plain function component for an element instead?';
-  }
-  if (warningHint !== undefined) {
-    return new Error(`Invalid ${location} \`${safePropName}\` supplied to \`${componentName}\`. ` + `Expected an element that can hold a ref. ${warningHint} ` + 'For more information see https://mui.com/r/caveat-with-refs-guide');
-  }
-  return null;
-}
-const elementAcceptingRef = (0,_chainPropTypes__WEBPACK_IMPORTED_MODULE_0__["default"])((prop_types__WEBPACK_IMPORTED_MODULE_1___default().element), acceptingRef);
-elementAcceptingRef.isRequired = (0,_chainPropTypes__WEBPACK_IMPORTED_MODULE_0__["default"])((prop_types__WEBPACK_IMPORTED_MODULE_1___default().element.isRequired), acceptingRef);
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (elementAcceptingRef);
-
-/***/ }),
-
 /***/ "./node_modules/@mui/utils/esm/exactProp.js":
 /*!**************************************************!*\
   !*** ./node_modules/@mui/utils/esm/exactProp.js ***!
@@ -20524,27 +18821,6 @@ function getDisplayName(Component) {
 
 /***/ }),
 
-/***/ "./node_modules/@mui/utils/esm/getScrollbarSize.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/@mui/utils/esm/getScrollbarSize.js ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ getScrollbarSize)
-/* harmony export */ });
-// A change of the browser zoom change the scrollbar size.
-// Credit https://github.com/twbs/bootstrap/blob/488fd8afc535ca3a6ad4dc581f5e89217b6a36ac/js/src/util/scrollbar.js#L14-L18
-function getScrollbarSize(doc) {
-  // https://developer.mozilla.org/en-US/docs/Web/API/Window/innerWidth#usage_notes
-  const documentWidth = doc.documentElement.clientWidth;
-  return Math.abs(window.innerWidth - documentWidth);
-}
-
-/***/ }),
-
 /***/ "./node_modules/@mui/utils/esm/isMuiElement.js":
 /*!*****************************************************!*\
   !*** ./node_modules/@mui/utils/esm/isMuiElement.js ***!
@@ -20578,26 +18854,6 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 function ownerDocument(node) {
   return node && node.ownerDocument || document;
-}
-
-/***/ }),
-
-/***/ "./node_modules/@mui/utils/esm/ownerWindow.js":
-/*!****************************************************!*\
-  !*** ./node_modules/@mui/utils/esm/ownerWindow.js ***!
-  \****************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ ownerWindow)
-/* harmony export */ });
-/* harmony import */ var _ownerDocument__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ownerDocument */ "./node_modules/@mui/utils/esm/ownerDocument.js");
-
-function ownerWindow(node) {
-  const doc = (0,_ownerDocument__WEBPACK_IMPORTED_MODULE_0__["default"])(node);
-  return doc.defaultView || window;
 }
 
 /***/ }),
@@ -20725,39 +18981,6 @@ __webpack_require__.r(__webpack_exports__);
 
 const useEnhancedEffect = typeof window !== 'undefined' ? react__WEBPACK_IMPORTED_MODULE_0__.useLayoutEffect : react__WEBPACK_IMPORTED_MODULE_0__.useEffect;
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (useEnhancedEffect);
-
-/***/ }),
-
-/***/ "./node_modules/@mui/utils/esm/useEventCallback.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/@mui/utils/esm/useEventCallback.js ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ useEventCallback)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _useEnhancedEffect__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./useEnhancedEffect */ "./node_modules/@mui/utils/esm/useEnhancedEffect.js");
-
-
-
-/**
- * https://github.com/facebook/react/issues/14099#issuecomment-440013892
- */
-function useEventCallback(fn) {
-  const ref = react__WEBPACK_IMPORTED_MODULE_0__.useRef(fn);
-  (0,_useEnhancedEffect__WEBPACK_IMPORTED_MODULE_1__["default"])(() => {
-    ref.current = fn;
-  });
-  return react__WEBPACK_IMPORTED_MODULE_0__.useCallback((...args) =>
-  // @ts-expect-error hide `this`
-  // tslint:disable-next-line:ban-comma-operator
-  (0, ref.current)(...args), []);
-}
 
 /***/ }),
 
@@ -28861,11 +27084,23 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
 /* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var _mui_joy__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/joy */ "./node_modules/@mui/joy/Typography/Typography.js");
+/* harmony import */ var _mui_joy__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @mui/joy */ "./node_modules/@mui/joy/Divider/Divider.js");
+/* harmony import */ var _mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @mui/joy/Typography */ "./node_modules/@mui/joy/Typography/Typography.js");
+/* harmony import */ var _mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/joy/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
+/* harmony import */ var _mui_joy_Chip__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/joy/Chip */ "./node_modules/@mui/joy/Chip/Chip.js");
 /* harmony import */ var _mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/joy/Box */ "./node_modules/@mui/joy/Box/Box.js");
 /* harmony import */ var _mui_joy_Button__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/joy/Button */ "./node_modules/@mui/joy/Button/Button.js");
 /* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/arrow-left.js");
 /* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/plus-square.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/check.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/activity.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/help-circle.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/feather.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/truck.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/shield.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/bar-chart-2.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/clock.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/coffee.js");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! lodash */ "lodash");
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_3__);
 
@@ -28880,6 +27115,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // JoyUI
+
+
+
 
 
 
@@ -28954,7 +27192,7 @@ function SingleTodo(props) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        mb: 2,
+        mb: 3,
         gap: 2,
         flexWrap: 'wrap'
       }
@@ -28977,10 +27215,7 @@ function SingleTodo(props) {
         className: "feather"
       }),
       onClick: toggleTodoEdit
-    }, "Edit To-Do")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy__WEBPACK_IMPORTED_MODULE_10__["default"], {
-      level: "h1",
-      fontSize: "xl4"
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, todoData.post_title)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
+    }, "Edit To-Do")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
       sx: {
         flex: 999
       }
@@ -28992,13 +27227,124 @@ function SingleTodo(props) {
           flexGrow: 1
         }
       }
-    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("style", null, todoData.styles), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("style", null, todoData.styles_custom), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_10__["default"], {
+      variant: "outlined",
+      sx: {
+        borderRadius: 'sm',
+        p: 2,
+        mb: 3
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      sx: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 2
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      fontWeight: "xl",
+      level: "body1",
+      mb: 1
+    }, "Created by:"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_12__["default"], {
+      size: "sm",
+      variant: "soft",
+      color: "primary"
+    }, "Alex Jonnold lol")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      fontWeight: "xl",
+      level: "body1",
+      mb: 1
+    }, "Created On: 11/03/23"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_12__["default"], {
+      size: "sm",
+      variant: "soft",
+      color: "primary"
+    }, "Last Update: 11/05/23")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      fontWeight: "xl",
+      level: "body1",
+      mb: 1
+    }, "Status:"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_12__["default"], {
+      variant: "outlined",
+      size: "sm",
+      startDecorator: {
+        Completed: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_13__["default"], {
+          className: "feather"
+        }),
+        'In Progress': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_14__["default"], {
+          className: `feather`
+        }),
+        Dependency: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_15__["default"], {
+          className: `feather`
+        }),
+        'Not Started': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_16__["default"], {
+          className: `feather`
+        })
+      }[todoData.status_name],
+      color: {
+        Completed: 'primary',
+        'In Progress': 'success',
+        Dependency: 'info',
+        'Not Started': 'neutral'
+      }[todoData.status_name]
+    }, todoData.status_name)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      fontWeight: "xl",
+      level: "body1",
+      mb: 1
+    }, "Priority"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_12__["default"], {
+      variant: "solid",
+      size: "sm",
+      startDecorator: {
+        Low: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_17__["default"], {
+          className: "feather"
+        }),
+        Medium: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_18__["default"], {
+          className: `feather`
+        }),
+        High: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_19__["default"], {
+          className: `feather`
+        }),
+        ASAP: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_20__["default"], {
+          className: `feather`
+        }),
+        'Not Set': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_21__["default"], {
+          className: `feather`
+        })
+      }[todoData.priority_name],
+      color: {
+        Low: 'success',
+        Medium: 'warning',
+        High: 'danger',
+        ASAP: 'info',
+        'Not Set': 'neutral'
+      }[todoData.priority_name]
+    }, todoData.priority_name)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      fontWeight: "xl",
+      level: "body1",
+      mb: 1
+    }, "Assigned To:"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      level: "title-sm",
+      textColor: "text.primary",
+      mb: 0.5
+    }, "Alex Jonnold"))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy__WEBPACK_IMPORTED_MODULE_22__["default"], {
+      sx: {
+        mt: 2
+      }
+    }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
+      sx: {
+        py: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'start'
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], {
+      level: "h1",
+      fontSize: "xl4"
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", null, todoData.post_title))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy__WEBPACK_IMPORTED_MODULE_22__["default"], null), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
       dangerouslySetInnerHTML: {
         __html: todoData.post_content
       }
     })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], {
       className: `edit-sapphire-todo ${showTodoEdit}`
-    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Loading...")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditToDoIframe, {
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Loading...")), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(EditToDoIframe, {
       src: `${window.location.origin}/wp-admin/post.php?post=${todoData.ID}&action=edit`
     }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Button__WEBPACK_IMPORTED_MODULE_6__["default"], {
       className: `add-todo-back-btn`,
@@ -29028,51 +27374,34 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
-/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router/dist/index.js");
-/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var fuse_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! fuse.js */ "./node_modules/fuse.js/dist/fuse.mjs");
-/* harmony import */ var _mui_joy_Box__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @mui/joy/Box */ "./node_modules/@mui/joy/Box/Box.js");
-/* harmony import */ var _mui_joy_Button__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @mui/joy/Button */ "./node_modules/@mui/joy/Button/Button.js");
-/* harmony import */ var _mui_joy_Divider__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @mui/joy/Divider */ "./node_modules/@mui/joy/Divider/Divider.js");
-/* harmony import */ var _mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @mui/joy/FormControl */ "./node_modules/@mui/joy/FormControl/FormControl.js");
-/* harmony import */ var _mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @mui/joy/FormLabel */ "./node_modules/@mui/joy/FormLabel/FormLabel.js");
-/* harmony import */ var _mui_joy_Input__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/joy/Input */ "./node_modules/@mui/joy/Input/Input.js");
-/* harmony import */ var _mui_joy_Modal__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/joy/Modal */ "./node_modules/@mui/joy/Modal/Modal.js");
-/* harmony import */ var _mui_joy_ModalDialog__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @mui/joy/ModalDialog */ "./node_modules/@mui/joy/ModalDialog/ModalDialog.js");
-/* harmony import */ var _mui_joy_ModalClose__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @mui/joy/ModalClose */ "./node_modules/@mui/joy/ModalClose/ModalClose.js");
-/* harmony import */ var _mui_joy_Select__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @mui/joy/Select */ "./node_modules/@mui/joy/Select/Select.js");
-/* harmony import */ var _mui_joy_Option__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @mui/joy/Option */ "./node_modules/@mui/joy/Option/Option.js");
-/* harmony import */ var _mui_joy_Table__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @mui/joy/Table */ "./node_modules/@mui/joy/Table/Table.js");
-/* harmony import */ var _mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/joy/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
-/* harmony import */ var _mui_joy_IconButton__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/joy/IconButton */ "./node_modules/@mui/joy/IconButton/IconButton.js");
-/* harmony import */ var _mui_joy_Typography__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @mui/joy/Typography */ "./node_modules/@mui/joy/Typography/Typography.js");
-/* harmony import */ var _mui_joy_Chip__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @mui/joy/Chip */ "./node_modules/@mui/joy/Chip/Chip.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/search.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/filter.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/check.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/activity.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/help-circle.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/feather.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/truck.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/shield.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/bar-chart-2.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/clock.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/coffee.js");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+/* harmony import */ var fuse_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! fuse.js */ "./node_modules/fuse.js/dist/fuse.mjs");
+/* harmony import */ var _mui_joy_Box__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/joy/Box */ "./node_modules/@mui/joy/Box/Box.js");
+/* harmony import */ var _mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/joy/FormControl */ "./node_modules/@mui/joy/FormControl/FormControl.js");
+/* harmony import */ var _mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/joy/FormLabel */ "./node_modules/@mui/joy/FormLabel/FormLabel.js");
+/* harmony import */ var _mui_joy_Input__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/joy/Input */ "./node_modules/@mui/joy/Input/Input.js");
+/* harmony import */ var _mui_joy_Select__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @mui/joy/Select */ "./node_modules/@mui/joy/Select/Select.js");
+/* harmony import */ var _mui_joy_Option__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/joy/Option */ "./node_modules/@mui/joy/Option/Option.js");
+/* harmony import */ var _mui_joy_Table__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/joy/Table */ "./node_modules/@mui/joy/Table/Table.js");
+/* harmony import */ var _mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @mui/joy/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
+/* harmony import */ var _mui_joy_Typography__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @mui/joy/Typography */ "./node_modules/@mui/joy/Typography/Typography.js");
+/* harmony import */ var _mui_joy_Chip__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @mui/joy/Chip */ "./node_modules/@mui/joy/Chip/Chip.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/search.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/check.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/activity.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/help-circle.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/feather.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/truck.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/shield.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/bar-chart-2.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/clock.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/coffee.js");
+/* harmony import */ var _dashboardComponents_getItems__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../dashboardComponents/getItems */ "./app/Dashboard/dashboardComponents/getItems.js");
 
 // WordPress
 
 
-
-
 // Router
-
-
-// TanStack React Query
 
 
 // Fuse.js fuzzy search
@@ -29090,67 +27419,27 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-
-
-
-
-
-
-
 // Icons
 
-function fetchTodos() {
-  let path = 'sapphire-site-manager/v1/todos';
-  const query = {
-    // page: page,
-    // per_page: 100,
-  };
-  return _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
-    path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_2__.addQueryArgs)(path, query),
-    method: 'GET',
-    parse: false
-  }).then(response => {
-    return response.json().then(data => {
-      return data;
-    });
-  });
-}
+
+// Local Components
+
 function TodoTable() {
-  const parentRef = React.useRef();
-  let [searchParams, setSearchParams] = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_4__.useSearchParams)();
+  let [searchParams, setSearchParams] = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_2__.useSearchParams)();
   let statusParam = searchParams.get('status');
   let todoSearchParam = searchParams.get('search');
   let priorityParam = searchParams.get('priority');
   const [open] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(false);
-  const queryClient = (0,react_query__WEBPACK_IMPORTED_MODULE_3__.useQueryClient)();
-  const navigate = (0,react_router_dom__WEBPACK_IMPORTED_MODULE_5__.useNavigate)();
-  let todoCount = 0;
   const statusOptions = {};
   const priorityOptions = {};
   const [todoStatus, setTodoStatus] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(statusParam || 'not-completed');
-  const [todoStatusName, setTodoStatusName] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)('Not Completed');
   const [todoPriority, setTodoPriority] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)(priorityParam || 'all');
-  const [todoPriorityName, setTodoPriorityName] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)('All');
-  const [todoSearch, setTodoSearch] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)('');
   let todos = [];
-  const [searchValue, setSearchValue] = (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.useState)('');
-  const searchOptions = {
-    findAllMatches: true,
-    keys: ['post_content', 'post_title'],
-    threshold: 0.3
+  const query = {
+    // page: page,
+    // per_page: 100,
   };
-  const {
-    status,
-    data,
-    error,
-    isFetching,
-    isPreviousData
-  } = (0,react_query__WEBPACK_IMPORTED_MODULE_3__.useQuery)({
-    queryKey: ['todos'],
-    queryFn: () => fetchTodos(),
-    keepPreviousData: true,
-    staleTime: 5000
-  });
+  const data = (0,_dashboardComponents_getItems__WEBPACK_IMPORTED_MODULE_1__["default"])('sapphire-site-manager/v1/todos', query, 'todos');
 
   // Filters
   if (data) {
@@ -29162,11 +27451,8 @@ function TodoTable() {
     }
 
     // Filter by Status
-    if (statusParam !== null && statusParam !== 'not-completed') {
+    if (statusParam !== null && statusParam !== 'not-completed' && statusParam !== 'all') {
       todos = todos.filter(todo => {
-        if (statusParam === 'all') {
-          return todo;
-        }
         return todo.status === statusParam;
       });
     }
@@ -29180,7 +27466,12 @@ function TodoTable() {
 
     // Filter by Search
     if (todoSearchParam !== null) {
-      const fuse = new fuse_js__WEBPACK_IMPORTED_MODULE_6__["default"](todos, searchOptions);
+      const searchOptions = {
+        findAllMatches: true,
+        keys: ['post_content', 'post_title'],
+        threshold: 0.3
+      };
+      const fuse = new fuse_js__WEBPACK_IMPORTED_MODULE_3__["default"](todos, searchOptions);
       if (todos.length) {
         todos = fuse.search(todoSearchParam);
       }
@@ -29199,10 +27490,8 @@ function TodoTable() {
     data.priorities.forEach(priorityItem => {
       priorityOptions[priorityItem.slug] = priorityItem.name;
     });
-    todoCount = todos.length;
   }
   function updateTodoSearchParam(e) {
-    console.log(e.target.value);
     if (e.target.value) {
       searchParams.set('search', e.target.value);
       setSearchParams(searchParams);
@@ -29216,11 +27505,6 @@ function TodoTable() {
       setTodoStatus(newValue);
       searchParams.set('status', newValue);
       setSearchParams(searchParams);
-      // setSearchParams({ status: newValue })
-    }
-
-    if (e) {
-      setTodoStatusName(e.target.innerText);
     }
   }
   function updatePriority(e, newValue) {
@@ -29228,64 +27512,11 @@ function TodoTable() {
       setTodoPriority(newValue);
       searchParams.set('priority', newValue);
       setSearchParams(searchParams);
-      // setSearchParams({ priority: newValue })
-    }
-
-    if (e) {
-      setTodoStatusName(e.target.innerText);
     }
   }
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, data && (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: `todo-page`
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_7__["default"], {
-    className: "SearchAndFilters-mobile",
-    sx: {
-      display: {
-        xs: 'flex',
-        sm: 'none'
-      },
-      my: 1,
-      gap: 1
-    }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Input__WEBPACK_IMPORTED_MODULE_8__["default"], {
-    size: "sm",
-    placeholder: "Search",
-    startDecorator: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_9__["default"], {
-      className: "feather"
-    }),
-    sx: {
-      flexGrow: 1
-    }
-  }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_IconButton__WEBPACK_IMPORTED_MODULE_10__["default"], {
-    size: "sm",
-    variant: "outlined",
-    color: "neutral",
-    onClick: () => setOpen(true)
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_11__["default"], {
-    className: "feather"
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Modal__WEBPACK_IMPORTED_MODULE_12__["default"], {
-    open: open,
-    onClose: () => setOpen(false)
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ModalDialog__WEBPACK_IMPORTED_MODULE_13__["default"], {
-    "aria-labelledby": "filter-modal",
-    layout: "fullscreen"
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ModalClose__WEBPACK_IMPORTED_MODULE_14__["default"], null), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_15__["default"], {
-    id: "filter-modal",
-    level: "h2"
-  }, "Filters"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Divider__WEBPACK_IMPORTED_MODULE_16__["default"], {
-    sx: {
-      my: 2
-    }
-  }), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_7__["default"], {
-    sx: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2
-    }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Button__WEBPACK_IMPORTED_MODULE_17__["default"], {
-    color: "primary",
-    onClick: () => setOpen(false)
-  }, "Submit"))))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_18__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Box__WEBPACK_IMPORTED_MODULE_4__["default"], {
     className: "SearchAndFilters-tabletUp",
     sx: {
       borderRadius: 'sm',
@@ -29303,20 +27534,21 @@ function TodoTable() {
         }
       }
     }
-  }, data && (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_19__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_5__["default"], {
     sx: {
       flex: 1
     },
     size: "sm"
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_20__["default"], null, "Search for To-do"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Input__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_6__["default"], null, "Search for To-do"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Input__WEBPACK_IMPORTED_MODULE_7__["default"], {
+    value: todoSearchParam,
     placeholder: "Search",
-    startDecorator: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_9__["default"], {
+    startDecorator: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_8__["default"], {
       className: "feather"
     }),
     onChange: e => updateTodoSearchParam(e)
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_19__["default"], {
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_5__["default"], {
     size: "sm"
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_20__["default"], null, "Status"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Select__WEBPACK_IMPORTED_MODULE_21__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_6__["default"], null, "Status"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Select__WEBPACK_IMPORTED_MODULE_9__["default"], {
     slotProps: {
       button: {
         sx: {
@@ -29328,13 +27560,13 @@ function TodoTable() {
     value: statusParam || 'not-completed',
     onChange: (e, newValue) => updateStatus(e, newValue)
   }, Object.keys(statusOptions).map((oneKey, i) => {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Option__WEBPACK_IMPORTED_MODULE_22__["default"], {
+    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Option__WEBPACK_IMPORTED_MODULE_10__["default"], {
       key: oneKey,
       value: oneKey
     }, statusOptions[oneKey]);
-  }))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_19__["default"], {
+  }))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormControl__WEBPACK_IMPORTED_MODULE_5__["default"], {
     size: "sm"
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_20__["default"], null, "Priority"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Select__WEBPACK_IMPORTED_MODULE_21__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_FormLabel__WEBPACK_IMPORTED_MODULE_6__["default"], null, "Priority"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Select__WEBPACK_IMPORTED_MODULE_9__["default"], {
     slotProps: {
       button: {
         sx: {
@@ -29346,11 +27578,11 @@ function TodoTable() {
     value: priorityParam || 'all',
     onChange: (e, newValue) => updatePriority(e, newValue)
   }, Object.keys(priorityOptions).map((oneKey, i) => {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Option__WEBPACK_IMPORTED_MODULE_22__["default"], {
+    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Option__WEBPACK_IMPORTED_MODULE_10__["default"], {
       key: oneKey,
       value: oneKey
     }, priorityOptions[oneKey]);
-  }))))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_7__["default"], {
+  }))))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_11__["default"], {
     className: "OrderTableContainer",
     variant: "outlined",
     sx: {
@@ -29360,7 +27592,7 @@ function TodoTable() {
       overflow: 'auto',
       minHeight: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Table__WEBPACK_IMPORTED_MODULE_23__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Table__WEBPACK_IMPORTED_MODULE_12__["default"], {
     "aria-labelledby": "tableTitle",
     stickyHeader: true,
     hoverRow: true,
@@ -29385,82 +27617,86 @@ function TodoTable() {
       width: '15%',
       padding: '12px 20px'
     }
-  }, "Priority"))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("tbody", null, todos && todos.map(todo => (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
-    key: todo.ID || todo.item.ID
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-    style: {
-      padding: 0
-    }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_4__.Link, {
-    to: `/todos/${todo.ID || todo.item.ID}`
-    // to={'/'}
-    ,
-    state: todo,
-    style: {
-      textDecoration: 'none',
-      display: 'block',
-      flex: '1',
-      padding: '12px 20px'
-    }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_15__["default"], {
-    fontWeight: "md",
-    level: "body2",
-    textColor: "text.primary"
-  }, todo.post_title || todo.item.post_title))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
-    style: {
-      minWidth: '160px'
-    }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_24__["default"], {
-    variant: "outlined",
-    size: "sm",
-    startDecorator: {
-      Completed: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_25__["default"], {
-        className: "feather"
-      }),
-      'In Progress': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_26__["default"], {
-        className: `feather`
-      }),
-      Dependency: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_27__["default"], {
-        className: `feather`
-      }),
-      'Not Started': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_28__["default"], {
-        className: `feather`
-      })
-    }[todo.status_name],
-    color: {
-      Completed: 'primary',
-      'In Progress': 'success',
-      Dependency: 'info',
-      'Not Started': 'neutral'
-    }[todo.status_name]
-  }, todo.status_name)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_24__["default"], {
-    variant: "solid",
-    size: "sm",
-    startDecorator: {
-      Low: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_29__["default"], {
-        className: "feather"
-      }),
-      Medium: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_30__["default"], {
-        className: `feather`
-      }),
-      High: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_31__["default"], {
-        className: `feather`
-      }),
-      ASAP: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_32__["default"], {
-        className: `feather`
-      }),
-      'Not Set': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_33__["default"], {
-        className: `feather`
-      })
-    }[todo.priority_name],
-    color: {
-      Low: 'success',
-      Medium: 'warning',
-      High: 'danger',
-      ASAP: 'info',
-      'Not Set': 'neutral'
-    }[todo.priority_name]
-  }, todo.priority_name)))))))));
+  }, "Priority"))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("tbody", null, todos && todos.map(todo => {
+    var _todo$item;
+    todo = (_todo$item = todo.item) !== null && _todo$item !== void 0 ? _todo$item : todo;
+    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("tr", {
+      key: todo.ID || todo.item.ID
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+      style: {
+        padding: 0
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_2__.Link, {
+      to: `/todos/${todo.ID || todo.item.ID}`
+      // to={'/'}
+      ,
+      state: todo,
+      style: {
+        textDecoration: 'none',
+        display: 'block',
+        flex: '1',
+        padding: '12px 20px'
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_13__["default"], {
+      fontWeight: "md",
+      level: "body2",
+      textColor: "text.primary"
+    }, todo.post_title || todo.item.post_title))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", {
+      style: {
+        minWidth: '160px'
+      }
+    }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_14__["default"], {
+      variant: "outlined",
+      size: "sm",
+      startDecorator: {
+        Completed: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_15__["default"], {
+          className: "feather"
+        }),
+        'In Progress': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_16__["default"], {
+          className: `feather`
+        }),
+        Dependency: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_17__["default"], {
+          className: `feather`
+        }),
+        'Not Started': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_18__["default"], {
+          className: `feather`
+        })
+      }[todo.status_name],
+      color: {
+        Completed: 'primary',
+        'In Progress': 'success',
+        Dependency: 'info',
+        'Not Started': 'neutral'
+      }[todo.status_name]
+    }, todo.status_name)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("td", null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Chip__WEBPACK_IMPORTED_MODULE_14__["default"], {
+      variant: "solid",
+      size: "sm",
+      startDecorator: {
+        Low: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_19__["default"], {
+          className: "feather"
+        }),
+        Medium: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_20__["default"], {
+          className: `feather`
+        }),
+        High: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_21__["default"], {
+          className: `feather`
+        }),
+        ASAP: (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_22__["default"], {
+          className: `feather`
+        }),
+        'Not Set': (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_23__["default"], {
+          className: `feather`
+        })
+      }[todo.priority_name],
+      color: {
+        Low: 'success',
+        Medium: 'warning',
+        High: 'danger',
+        ASAP: 'info',
+        'Not Set': 'neutral'
+      }[todo.priority_name]
+    }, todo.priority_name)));
+  }))))));
 }
 
 /***/ }),
@@ -29556,30 +27792,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
-/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
-/* harmony import */ var _mui_joy_List__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/joy/List */ "./node_modules/@mui/joy/List/List.js");
-/* harmony import */ var _mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/joy/ListItem */ "./node_modules/@mui/joy/ListItem/ListItem.js");
-/* harmony import */ var _mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @mui/joy/ListItemContent */ "./node_modules/@mui/joy/ListItemContent/ListItemContent.js");
-/* harmony import */ var _mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @mui/joy/ListItemDecorator */ "./node_modules/@mui/joy/ListItemDecorator/ListItemDecorator.js");
-/* harmony import */ var _mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/joy/ListItemButton */ "./node_modules/@mui/joy/ListItemButton/ListItemButton.js");
-/* harmony import */ var _mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @mui/joy/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
-/* harmony import */ var _mui_joy_Typography__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/joy/Typography */ "./node_modules/@mui/joy/Typography/Typography.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/home.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/user-check.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/help-circle.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/book-open.js");
-/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/bar-chart-2.js");
-/* harmony import */ var _ColorSchemeToggle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ColorSchemeToggle */ "./app/Dashboard/dashboardComponents/ColorSchemeToggle.jsx");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-router-dom */ "./node_modules/react-router-dom/dist/index.js");
+/* harmony import */ var _mui_joy_List__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @mui/joy/List */ "./node_modules/@mui/joy/List/List.js");
+/* harmony import */ var _mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/joy/ListItem */ "./node_modules/@mui/joy/ListItem/ListItem.js");
+/* harmony import */ var _mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/joy/ListItemContent */ "./node_modules/@mui/joy/ListItemContent/ListItemContent.js");
+/* harmony import */ var _mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/joy/ListItemDecorator */ "./node_modules/@mui/joy/ListItemDecorator/ListItemDecorator.js");
+/* harmony import */ var _mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/joy/ListItemButton */ "./node_modules/@mui/joy/ListItemButton/ListItemButton.js");
+/* harmony import */ var _mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @mui/joy/Sheet */ "./node_modules/@mui/joy/Sheet/Sheet.js");
+/* harmony import */ var _mui_joy_Typography__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @mui/joy/Typography */ "./node_modules/@mui/joy/Typography/Typography.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/home.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/user-check.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/help-circle.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/book-open.js");
+/* harmony import */ var react_feather__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! react-feather */ "./node_modules/react-feather/dist/icons/bar-chart-2.js");
+/* harmony import */ var _ColorSchemeToggle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ColorSchemeToggle */ "./app/Dashboard/dashboardComponents/ColorSchemeToggle.jsx");
 
 // Router
 
 
 // React Query
-
-
 // JoyUI
-
 
 
 
@@ -29594,7 +27826,7 @@ __webpack_require__.r(__webpack_exports__);
 // Local Components
 
 function Sidebar() {
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(React.Fragment, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_3__["default"], {
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(React.Fragment, null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_2__["default"], {
     className: "SecondSidebar",
     sx: {
       position: 'relative',
@@ -29611,7 +27843,7 @@ function Sidebar() {
       flexDirection: 'column',
       gap: 2
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_3__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Sheet__WEBPACK_IMPORTED_MODULE_2__["default"], {
     sx: {
       display: 'flex',
       alignItems: 'center',
@@ -29623,82 +27855,130 @@ function Sidebar() {
       borderBottom: '1px solid',
       borderColor: 'divider'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_4__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_Typography__WEBPACK_IMPORTED_MODULE_3__["default"], {
     fontWeight: "xl",
     level: "body1"
-  }, "Sapphire"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ColorSchemeToggle__WEBPACK_IMPORTED_MODULE_2__["default"], {
+  }, "Sapphire"), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ColorSchemeToggle__WEBPACK_IMPORTED_MODULE_1__["default"], {
     id: undefined
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_List__WEBPACK_IMPORTED_MODULE_5__["default"], {
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_List__WEBPACK_IMPORTED_MODULE_4__["default"], {
     sx: {
       '--ListItem-radius': '8px',
       '--ListItem-minHeight': '32px',
       '--List-gap': 1,
       pt: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_7__.Link, {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_6__.Link, {
     to: "/",
     style: {
       textDecoration: 'none',
       display: 'block',
       width: '100%'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__["default"], {
     sx: {
       my: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_10__["default"], null)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Overview")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_7__.Link, {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_9__["default"], null)), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Overview")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_6__.Link, {
     to: "/todos",
     style: {
       textDecoration: 'none',
       display: 'block',
       width: '100%'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__["default"], {
     sx: {
       my: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_12__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_11__["default"], {
     className: "feather"
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Todos")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_7__.Link, {
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Todos")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_6__.Link, {
     to: "/",
     style: {
       textDecoration: 'none',
       display: 'block',
       width: '100%'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__["default"], {
     sx: {
       my: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_13__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_12__["default"], {
     className: "feather"
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Ask")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_7__.Link, {
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Ask")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_6__.Link, {
     to: "/",
     style: {
       textDecoration: 'none',
       display: 'block',
       width: '100%'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__["default"], {
     sx: {
       my: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_14__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_13__["default"], {
     className: "feather"
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Documentation")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_6__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_7__.Link, {
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Documentation")))), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItem__WEBPACK_IMPORTED_MODULE_5__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_router_dom__WEBPACK_IMPORTED_MODULE_6__.Link, {
     to: "/theme-options",
     style: {
       textDecoration: 'none',
       display: 'block',
       width: '100%'
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_8__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemButton__WEBPACK_IMPORTED_MODULE_7__["default"], {
     sx: {
       my: 0
     }
-  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_9__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_15__["default"], {
+  }, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemDecorator__WEBPACK_IMPORTED_MODULE_8__["default"], null, (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(react_feather__WEBPACK_IMPORTED_MODULE_14__["default"], {
     className: "feather"
-  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_11__["default"], null, "Theme Options")))))));
+  })), (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_mui_joy_ListItemContent__WEBPACK_IMPORTED_MODULE_10__["default"], null, "Theme Options")))))));
+}
+
+/***/ }),
+
+/***/ "./app/Dashboard/dashboardComponents/getItems.js":
+/*!*******************************************************!*\
+  !*** ./app/Dashboard/dashboardComponents/getItems.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ getItems)
+/* harmony export */ });
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/url */ "@wordpress/url");
+/* harmony import */ var _wordpress_url__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_url__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_query__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-query */ "./node_modules/react-query/es/index.js");
+
+
+
+function getItems() {
+  let path = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  let query = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  let queryKey = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
+  const {
+    status,
+    data,
+    error,
+    isFetching,
+    isPreviousData
+  } = (0,react_query__WEBPACK_IMPORTED_MODULE_2__.useQuery)({
+    queryKey: [queryKey],
+    queryFn: () => _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()({
+      path: (0,_wordpress_url__WEBPACK_IMPORTED_MODULE_1__.addQueryArgs)(path, query),
+      method: 'GET',
+      parse: false
+    }).then(response => {
+      return response.json().then(data => {
+        return data;
+      });
+    }),
+    keepPreviousData: true,
+    staleTime: 5000
+  });
+  return data;
 }
 
 /***/ }),
@@ -31657,6 +29937,19 @@ if (false) {} else {
 
 /***/ }),
 
+/***/ "./node_modules/@fontsource/inter/index.css":
+/*!**************************************************!*\
+  !*** ./node_modules/@fontsource/inter/index.css ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ }),
+
 /***/ "./app/Dashboard/dashboard.scss":
 /*!**************************************!*\
   !*** ./app/Dashboard/dashboard.scss ***!
@@ -33266,60 +31559,6 @@ Feather.propTypes = {
 };
 Feather.displayName = 'Feather';
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Feather);
-
-/***/ }),
-
-/***/ "./node_modules/react-feather/dist/icons/filter.js":
-/*!*********************************************************!*\
-  !*** ./node_modules/react-feather/dist/icons/filter.js ***!
-  \*********************************************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
-/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! prop-types */ "./node_modules/prop-types/index.js");
-/* harmony import */ var prop_types__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(prop_types__WEBPACK_IMPORTED_MODULE_1__);
-function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
-
-function _objectWithoutProperties(source, excluded) { if (source == null) return {}; var target = _objectWithoutPropertiesLoose(source, excluded); var key, i; if (Object.getOwnPropertySymbols) { var sourceSymbolKeys = Object.getOwnPropertySymbols(source); for (i = 0; i < sourceSymbolKeys.length; i++) { key = sourceSymbolKeys[i]; if (excluded.indexOf(key) >= 0) continue; if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue; target[key] = source[key]; } } return target; }
-
-function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) return {}; var target = {}; var sourceKeys = Object.keys(source); var key, i; for (i = 0; i < sourceKeys.length; i++) { key = sourceKeys[i]; if (excluded.indexOf(key) >= 0) continue; target[key] = source[key]; } return target; }
-
-
-
-var Filter = (0,react__WEBPACK_IMPORTED_MODULE_0__.forwardRef)(function (_ref, ref) {
-  var _ref$color = _ref.color,
-      color = _ref$color === void 0 ? 'currentColor' : _ref$color,
-      _ref$size = _ref.size,
-      size = _ref$size === void 0 ? 24 : _ref$size,
-      rest = _objectWithoutProperties(_ref, ["color", "size"]);
-
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("svg", _extends({
-    ref: ref,
-    xmlns: "http://www.w3.org/2000/svg",
-    width: size,
-    height: size,
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: color,
-    strokeWidth: "2",
-    strokeLinecap: "round",
-    strokeLinejoin: "round"
-  }, rest), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("polygon", {
-    points: "22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
-  }));
-});
-Filter.propTypes = {
-  color: (prop_types__WEBPACK_IMPORTED_MODULE_1___default().string),
-  size: prop_types__WEBPACK_IMPORTED_MODULE_1___default().oneOfType([(prop_types__WEBPACK_IMPORTED_MODULE_1___default().string), (prop_types__WEBPACK_IMPORTED_MODULE_1___default().number)])
-};
-Filter.displayName = 'Filter';
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Filter);
 
 /***/ }),
 
@@ -45721,10 +43960,12 @@ var __webpack_exports__ = {};
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./app.scss */ "./app/app.scss");
-/* harmony import */ var _Dashboard_DashBoard__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Dashboard/DashBoard */ "./app/Dashboard/DashBoard.jsx");
+/* harmony import */ var _fontsource_inter__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @fontsource/inter */ "./node_modules/@fontsource/inter/index.css");
+/* harmony import */ var _app_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./app.scss */ "./app/app.scss");
+/* harmony import */ var _Dashboard_DashBoard__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Dashboard/DashBoard */ "./app/Dashboard/DashBoard.jsx");
 
 // WordPress
+
 
 
 // Local Components
@@ -45736,7 +43977,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Render Dashboard
   if ('undefined' !== typeof sapphireSiteManagerDashboard && null !== sapphireSiteManagerDashboard) {
-    (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.render)((0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Dashboard_DashBoard__WEBPACK_IMPORTED_MODULE_2__["default"], null), sapphireSiteManagerDashboard);
+    (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.render)((0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)(_Dashboard_DashBoard__WEBPACK_IMPORTED_MODULE_3__["default"], null), sapphireSiteManagerDashboard);
   }
 
   // Render Assistant
