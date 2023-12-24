@@ -59,4 +59,12 @@ interface TaxonomyInterface {
 	 * @return array
 	 */
 	public function labels(): array;
+
+	/**
+	 * Allow users to create terms.
+	 * If false users will not be able to create terms.
+	 *
+	 * @return bool
+	 */
+	public function allow_term_creation(): bool;
 }

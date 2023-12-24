@@ -27168,6 +27168,7 @@ function SingleTodo(props) {
   if (todoQueryResult.status === 'success') {
     todoData = todoQueryResult.data;
   }
+  console.log(todoData);
   if (todoQueryResult.status === 'error' && (0,lodash__WEBPACK_IMPORTED_MODULE_3__.isEmpty)(todoData)) {
     return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
       className: "error"

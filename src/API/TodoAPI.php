@@ -1,8 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\APIs;
+namespace SapphireSiteManager\API;
 
+use SapphireSiteManager\API\EndPoints\TodoStatuses;
 use stdClass;
 use WP_Post;
 use WP_Query;
@@ -19,13 +20,34 @@ use WP_REST_Request;
  */
 class TodoAPI {
 
+	private $statuses = [];
+	private $rest_api_statuses = [];
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * @since    1.0.0
 	 */
 	public function __construct() {
+
+		$this->statuses = get_terms(
+			array(
+				'taxonomy'   => 'sapphire_todo_status',
+				'hide_empty' => false,
+				'orderby'    => 'term_order',
+			)
+		);
+		$this->prepare_rest_api_statuses();
+
 		$this->register_todo_endpoints();
+	}
+
+	public function prepare_rest_api_statuses() {
+		foreach ( $this->statuses as $status ) {
+			$status_to_prepare         = $status;
+			$status_to_prepare->bobby  = 'bobby yo';
+			$this->rest_api_statuses[] = $status_to_prepare;
+		}
 	}
 
 	/**
@@ -34,7 +56,7 @@ class TodoAPI {
 	 * @since    1.0.0
 	 * @uses    register_rest_route()
 	 */
-	public static function register_todo_endpoints(): void {
+	public function register_todo_endpoints(): void {
 		// all todos
 		// wp-json/sapphire-site-manager/v1/todos.
 		register_rest_route(
@@ -154,6 +176,18 @@ class TodoAPI {
 			$single_todo_properties->priority_name       = ! empty( $single_priority_terms ) ? $single_priority_terms[0]->name : 'Not Set';
 			$single_todo_properties->author_display_name = get_the_author_meta( 'display_name', $single_todo->post_author );
 			$single_todo_properties->author_avatar_url   = get_avatar( $single_todo->post_author, 100, '', '', array( 'force_default' => true, 'default' => 'mystery' ) );
+			$prep_statuses                               = new TodoStatuses();
+			$statuses                                    = $prep_statuses->get_statuses();
+
+
+			$single_todo_properties->statuses = $statuses;
+			$single_todo_properties->priority = get_terms(
+				array(
+					'taxonomy'   => 'sapphire_todo_status',
+					'hide_empty' => false,
+					'orderby'    => 'term_order',
+				)
+			);
 
 
 			return $single_todo_properties;

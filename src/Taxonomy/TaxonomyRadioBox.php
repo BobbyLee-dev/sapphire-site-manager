@@ -29,8 +29,6 @@ class TaxonomyRadioBox {
 	/**
 	 * The Taxonomy object.
 	 *
-	 * @since    1.0.0
-	 * @access   public
 	 * @var object $taxonomy
 	 */
 	public object $taxonomy;
@@ -38,8 +36,6 @@ class TaxonomyRadioBox {
 	/**
 	 * The new metabox title.
 	 *
-	 * @since    1.0.0
-	 * @access   public
 	 * @var string $metabox_title
 	 */
 	public string $metabox_title = '';
@@ -91,7 +87,7 @@ class TaxonomyRadioBox {
 	 * @param array $post_types post-types to display custom metabox.
 	 * @param string $default_selection the default radio box selection.
 	 */
-	public function __construct( $tax_slug, $post_types = array(), $default_selection = '' ) {
+	public function __construct( string $tax_slug, array $post_types = array(), string $default_selection = '' ) {
 		$this->slug              = $tax_slug;
 		$this->post_types        = $post_types;
 		$this->default_selection = $default_selection;
@@ -102,7 +98,7 @@ class TaxonomyRadioBox {
 	 */
 	public function add_radio_box(): void {
 		foreach ( $this->post_types() as $key => $cpt ) {
-			remove_meta_box( $this->slug . 'div', $cpt, 'normal' );
+			remove_meta_box( $this->slug . 'div', $cpt, 'side' );
 			add_meta_box(
 				$this->slug . '_radio',
 				$this->metabox_title(),

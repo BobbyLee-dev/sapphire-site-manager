@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\Taxonomy\Taxonomies;
 
+use SapphireSiteManager\Taxonomy\TaxonomyInterface;
+
 /**
  * Register custom Taxonomy Priority for Todos.
  *
  * @since  1.0.0
  */
-class Priority implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
+class Priority implements TaxonomyInterface {
 
 	/**
 	 * @inheritDoc
@@ -51,7 +53,7 @@ class Priority implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
 	 * @inheritDoc
 	 */
 	public function use_radio_buttons(): bool {
-		return true;
+		return false;
 	}
 
 	/**
@@ -95,5 +97,12 @@ class Priority implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
 			'items_list'                 => __( 'Priority list', 'sapphire-site-manager' ),
 			'items_list_navigation'      => __( 'Priorities list navigation', 'sapphire-site-manager' ),
 		);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function allow_term_creation(): bool {
+		return true;
 	}
 }

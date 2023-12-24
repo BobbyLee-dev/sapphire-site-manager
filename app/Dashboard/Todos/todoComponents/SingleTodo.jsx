@@ -63,6 +63,8 @@ export default function SingleTodo(props) {
 		todoData = todoQueryResult.data
 	}
 
+	console.log(todoData)
+
 	if (todoQueryResult.status === 'error' && isEmpty(todoData)) {
 		return (
 			<div className="error">

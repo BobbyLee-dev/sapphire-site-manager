@@ -1,10 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace SapphireSiteManager\APIs;
-
-use SapphireSiteManager\CPT\CPTs\ToDo;
-use SapphireSiteManager\CPT\RegisterCPTs;
+namespace SapphireSiteManager\API;
 
 /**
  * The main Plugin class.

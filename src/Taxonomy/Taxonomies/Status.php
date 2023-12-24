@@ -3,12 +3,14 @@ declare( strict_types=1 );
 
 namespace SapphireSiteManager\Taxonomy\Taxonomies;
 
+use SapphireSiteManager\Taxonomy\TaxonomyInterface;
+
 /**
  * Register custom Taxonomy Status for Todos.
  *
  * @since  1.0.0
  */
-class Status implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
+class Status implements TaxonomyInterface {
 
 	/**
 	 * @inheritDoc
@@ -97,5 +99,12 @@ class Status implements \SapphireSiteManager\Taxonomy\TaxonomyInterface {
 			'items_list'                 => __( 'Status list', 'sapphire-site-manager' ),
 			'items_list_navigation'      => __( 'Statuses list navigation', 'sapphire-site-manager' ),
 		);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function allow_term_creation(): bool {
+		return false;
 	}
 }

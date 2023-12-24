@@ -4,7 +4,7 @@ declare( strict_types=1 );
 namespace SapphireSiteManager;
 
 use SapphireSiteManager\AdminFacing\AdminFacing;
-use SapphireSiteManager\APIs\RegisterAPIs;
+use SapphireSiteManager\API\RegisterAPIs;
 use SapphireSiteManager\CPT\RegisterCPTs;
 use SapphireSiteManager\PublicFacing\PublicFacing;
 use SapphireSiteManager\Taxonomy\RegisterTaxonomies;
