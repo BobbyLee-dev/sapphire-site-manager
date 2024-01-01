@@ -5,7 +5,8 @@ namespace SapphireSiteManager;
 
 use SapphireSiteManager\AdminFacing\AdminFacing;
 use SapphireSiteManager\API\RegisterAPIs;
-use SapphireSiteManager\CPT\RegisterCPTs;
+use SapphireSiteManager\CPT\CPT;
+use SapphireSiteManager\DB\DB;
 use SapphireSiteManager\PublicFacing\PublicFacing;
 use SapphireSiteManager\Taxonomy\RegisterTaxonomies;
 
@@ -20,6 +21,8 @@ class Plugin {
 	public function run(): void {
 		$this->define_activation_hook();
 		$this->define_deactivation_hook();
+		$test = new DB();
+		$test->run();
 
 		// Admin.
 		$admin_facing = new AdminFacing();
@@ -29,7 +32,7 @@ class Plugin {
 		new PublicFacing();
 
 		// CPTs.
-		new RegisterCPTs();
+		new CPT();
 
 		// Taxonomies.
 		new RegisterTaxonomies();
@@ -48,7 +51,8 @@ class Plugin {
 		register_activation_hook(
 			__FILE__,
 			function () {
-				Activator::activate();
+				$test = new DB();
+				$test->run();
 			}
 		);
 	}

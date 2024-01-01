@@ -33,7 +33,7 @@ export default function DashBoard() {
 					'[data-feather], .feather': {
 						color: 'var(--Icon-color)',
 						margin: 'var(--Icon-margin)',
-						fontSize: 'var(--Icon-fontSize, 20px)',
+						fontSize: 'var(--Icon-fontSize, 16px)',
 						width: '1em',
 						height: '1em',
 					},

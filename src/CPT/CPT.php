@@ -6,7 +6,7 @@ namespace SapphireSiteManager\CPT;
 /**
  * Register CPTs for the plugin
  */
-class RegisterCPTs {
+class CPT {
 
 	/**
 	 * Initialize the class and set its properties.

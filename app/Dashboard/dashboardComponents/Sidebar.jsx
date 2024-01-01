@@ -12,7 +12,7 @@ import Sheet from '@mui/joy/Sheet'
 import Typography from '@mui/joy/Typography'
 
 // Icons
-import {BarChart2, BookOpen, HelpCircle, Home, UserCheck,} from 'react-feather'
+import {BarChart2, BookOpen, Home, MessageSquare, UserCheck} from 'react-feather'
 
 // Local Components
 import ColorSchemeToggle from './ColorSchemeToggle'
@@ -54,7 +54,7 @@ export default function Sidebar() {
 				>
 					<Typography fontWeight="xl"
 								level="body1">Sapphire</Typography>
-					<ColorSchemeToggle id={undefined}/>
+					<ColorSchemeToggle id={undefined} className="feather"/>
 				</Sheet>
 				<List
 					sx={{
@@ -79,9 +79,9 @@ export default function Sidebar() {
 								}}
 							>
 								<ListItemDecorator>
-									<Home/>
+									<Home className="feather"/>
 								</ListItemDecorator>
-								<ListItemContent>Overview</ListItemContent>
+								<ListItemContent><Typography level="title-sm" fontSize="sm">Overview</Typography></ListItemContent>
 							</ListItemButton>
 						</Link>
 					</ListItem>
@@ -102,7 +102,7 @@ export default function Sidebar() {
 								<ListItemDecorator>
 									<UserCheck className="feather"/>
 								</ListItemDecorator>
-								<ListItemContent>Todos</ListItemContent>
+								<ListItemContent><Typography level="title-sm" fontSize="sm">Todos</Typography></ListItemContent>
 							</ListItemButton>
 						</Link>
 					</ListItem>
@@ -121,9 +121,9 @@ export default function Sidebar() {
 								}}
 							>
 								<ListItemDecorator>
-									<HelpCircle className="feather"/>
+									<MessageSquare className="feather"/>
 								</ListItemDecorator>
-								<ListItemContent>Ask</ListItemContent>
+								<ListItemContent><Typography level="title-sm" fontSize="sm">Messages</Typography></ListItemContent>
 							</ListItemButton>
 						</Link>
 					</ListItem>
@@ -144,7 +144,7 @@ export default function Sidebar() {
 								<ListItemDecorator>
 									<BookOpen className="feather"/>
 								</ListItemDecorator>
-								<ListItemContent>Documentation</ListItemContent>
+								<ListItemContent><Typography level="title-sm" fontSize="sm">Documentation</Typography></ListItemContent>
 							</ListItemButton>
 						</Link>
 					</ListItem>
@@ -165,7 +165,7 @@ export default function Sidebar() {
 								<ListItemDecorator>
 									<BarChart2 className="feather"/>
 								</ListItemDecorator>
-								<ListItemContent>Theme Options</ListItemContent>
+								<ListItemContent><Typography level="title-sm" fontSize="sm">Theme Options</Typography></ListItemContent>
 							</ListItemButton>
 						</Link>
 					</ListItem>

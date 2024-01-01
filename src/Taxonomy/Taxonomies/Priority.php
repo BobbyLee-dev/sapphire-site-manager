@@ -53,7 +53,7 @@ class Priority implements TaxonomyInterface {
 	 * @inheritDoc
 	 */
 	public function use_radio_buttons(): bool {
-		return false;
+		return true;
 	}
 
 	/**
